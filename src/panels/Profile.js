@@ -39,11 +39,11 @@ import {
 	showErrorSnackbar, showSuccessSnackbar,
 } from './_showSnackbar'
 
-import LoveEmoji from '../openmoji/1F929.svg'
-import LikeEmoji from '../openmoji/1F60A.svg'
-import NeutralEmoji from '../openmoji/1F610.svg'
-import DislikeEmoji from '../openmoji/1F627.svg'
-import HateEmoji from '../openmoji/1F621.svg'
+import LoveEmoji from 'openmoji/color/svg/1F929.svg'
+import LikeEmoji from 'openmoji/color/svg/1F60A.svg'
+import NeutralEmoji from 'openmoji/color/svg/1F610.svg'
+import DislikeEmoji from 'openmoji/color/svg/1F627.svg'
+import HateEmoji from 'openmoji/color/svg/1F621.svg'
 
 // TODO: рекламный баннер внизу экрана профиля
 // TODO: писать спасибо после оценивания (и зелёная галочка)

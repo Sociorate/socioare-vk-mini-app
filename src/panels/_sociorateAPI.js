@@ -1,0 +1,1 @@
+const endpoit = 'https://example.com/'

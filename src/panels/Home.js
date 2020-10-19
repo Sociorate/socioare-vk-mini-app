@@ -301,6 +301,9 @@ function ProfileSelection({ go }) {
 	)
 }
 
+// TODO: кнопка для смены темы (три режима: автоматический, тёмный, светлый)
+// TODO: кнопка "Сообщить об ошибке"
+
 function Other() {
 	const [snackbar, setSnackbar] = useState(null)
 
@@ -352,7 +355,11 @@ function Other() {
 
 			<Separator />
 
-			<SimpleCell before={<Icon28LogoVkOutline />} href='https://vk.com/sociorate' target='_blank'>Паблик Sociorate</SimpleCell>
+			<SimpleCell
+				href='https://vk.com/sociorate' target='_blank'
+				before={<Icon28LogoVkOutline />}
+				description="Следите за новостями!"
+			>Паблик Sociorate</SimpleCell>
 
 			<Footer>Все эмодзи сделаны <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – проект свободных эмодзи и иконок. Лицензия: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link><br />All emojis designed by <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – the open-source emoji and icon project. License: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link></Footer>
 

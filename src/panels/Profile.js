@@ -21,6 +21,7 @@ import {
 	PanelSpinner,
 	Alert,
 	Title,
+	Spinner,
 } from '@vkontakte/vkui'
 
 import {
@@ -30,6 +31,11 @@ import {
 } from '@vkontakte/icons'
 
 import bridge from '@vkontakte/vk-bridge'
+
+import {
+	postRating,
+	getRating,
+} from '../sociorate-api'
 
 import vkQr from '@vkontakte/vk-qr'
 
@@ -45,7 +51,6 @@ import DislikeEmoji from 'openmoji/color/svg/1F627.svg'
 import HateEmoji from 'openmoji/color/svg/1F621.svg'
 
 // TODO: рекламный баннер внизу экрана профиля
-// TODO: писать спасибо после оценивания (и зелёная галочка)
 // TODO: скачивание qr кода
 
 function Profile({ id, go, setPopout, reCaptchaRef, currentUserID, userid }) {
@@ -163,24 +168,40 @@ function Profile({ id, go, setPopout, reCaptchaRef, currentUserID, userid }) {
 }
 
 function RateButton({ imageSrc, code, userid, setSnackbar, reCaptchaRef }) {
+	const [buttonMode, setButtonMode] = useState('tertiary')
+
 	return (
 		<Button
 			style={{
 				position: 'relative',
 				width: '63px',
 			}}
-			mode='tertiary'
+			mode={buttonMode}
 			onClick={async () => {
 				let reCaptchaToken = null
 				try {
-					reCaptchaToken = await reCaptchaRef.current.executeAsync()
 					reCaptchaRef.current.reset()
+					reCaptchaToken = await reCaptchaRef.current.executeAsync()
+				} catch (err) {
+					console.error(err)
+				}
+
+				if (reCaptchaToken == null) {
+					showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
+					return
+				}
+
+				try {
+					await postRating(userid, code, reCaptchaToken)
 				} catch (err) {
 					console.error(err)
 					showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
+					return
 				}
 
-				console.log(userid, code, reCaptchaToken)
+				setButtonMode('commerce')
+				setTimeout(() => { setButtonMode('tertiary') }, 2000)
+				showSuccessSnackbar(setSnackbar, 'Спасибо за ваш вклад!')
 			}}
 		>
 			<img style={{
@@ -206,8 +227,6 @@ function RatingButtons({ userid, setSnackbar, reCaptchaRef }) {
 				height: '63px',
 				marginTop: '10px'
 			}}>
-				{/* TODO: Снэкбар "Спасибо за ваше !" */}
-				{/* TODO: Снэкбар с серой кнопкой отменить после нажатия */}
 				<RateButton imageSrc={HateEmoji} code='1' userid={userid} setSnackbar={setSnackbar} reCaptchaRef={reCaptchaRef} />
 				<RateButton imageSrc={DislikeEmoji} code='2' userid={userid} setSnackbar={setSnackbar} reCaptchaRef={reCaptchaRef} />
 				<RateButton imageSrc={NeutralEmoji} code='3' userid={userid} setSnackbar={setSnackbar} reCaptchaRef={reCaptchaRef} />
@@ -220,7 +239,7 @@ function RatingButtons({ userid, setSnackbar, reCaptchaRef }) {
 	)
 }
 
-function RatingCardBar({ emoji, emojiAlt, level, color, count }) {
+function RatingCardBar({ emoji, emojiAlt, biggestCount, color, count }) {
 	return (
 		<div style={{
 			height: '27px',
@@ -244,7 +263,7 @@ function RatingCardBar({ emoji, emojiAlt, level, color, count }) {
 				}}>
 					<div style={{
 						height: '100%',
-						width: level + '%',
+						width: (biggestCount > 0 ? `${count / biggestCount * 100}%` : '0px'),
 						backgroundColor: color,
 					}} />
 				</div>
@@ -309,11 +328,11 @@ const RatingCard = ({ rating }) => {
 				<Card size='l'>
 					<Card size='l' mode='shadow'>
 						<Div>
-							<RatingCardBar emoji={LoveEmoji} emojiAlt='5' level={rating[4] / biggestCount * 100} color='#4CAF50' count={rating[4]} />
-							<RatingCardBar emoji={LikeEmoji} emojiAlt='4' level={rating[3] / biggestCount * 100} color='#2196F3' count={rating[3]} />
-							<RatingCardBar emoji={NeutralEmoji} emojiAlt='3' level={rating[2] / biggestCount * 100} color='#00bcd4' count={rating[2]} />
-							<RatingCardBar emoji={DislikeEmoji} emojiAlt='2' level={rating[1] / biggestCount * 100} color='#ff9800' count={rating[1]} />
-							<RatingCardBar emoji={HateEmoji} emojiAlt='1' level={rating[0] / biggestCount * 100} color='#f44336' count={rating[0]} />
+							<RatingCardBar emoji={LoveEmoji} emojiAlt='5' biggestCount={biggestCount} color='#4CAF50' count={rating[4]} />
+							<RatingCardBar emoji={LikeEmoji} emojiAlt='4' biggestCount={biggestCount} color='#2196F3' count={rating[3]} />
+							<RatingCardBar emoji={NeutralEmoji} emojiAlt='3' biggestCount={biggestCount} color='#00bcd4' count={rating[2]} />
+							<RatingCardBar emoji={DislikeEmoji} emojiAlt='2' biggestCount={biggestCount} color='#ff9800' count={rating[1]} />
+							<RatingCardBar emoji={HateEmoji} emojiAlt='1' biggestCount={biggestCount} color='#f44336' count={rating[0]} />
 						</Div>
 					</Card>
 					{averageRatingEmoji ? <img style={{
@@ -328,6 +347,27 @@ const RatingCard = ({ rating }) => {
 }
 
 function UserProfile({ setPopout, setSnackbar, reCaptchaRef, currentUserID, user }) {
+	const [rating, setRating] = useState(null)
+
+	useEffect(() => {
+		const fetchRating = async () => {
+			let data = null
+			try {
+				data = await getRating(user.id)
+			} catch (err) {
+				console.error(err)
+			}
+
+			if (data == null || !data.rating) {
+				showErrorSnackbar(setSnackbar, "Не удалось получить данные о рейтинге")
+				return
+			}
+
+			setRating(data.rating)
+		}
+		fetchRating()
+	}, [setSnackbar, user])
+
 	return (
 		<React.Fragment>
 			<RichCell
@@ -400,7 +440,7 @@ function UserProfile({ setPopout, setSnackbar, reCaptchaRef, currentUserID, user
 
 			{currentUserID !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} reCaptchaRef={reCaptchaRef} /> : null}
 
-			<RatingCard rating={[1, 2, 4, 9, 15]} />
+			{rating != null ? <RatingCard rating={rating} /> : <Spinner />}
 
 			<Footer>Все эмодзи сделаны <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – проект свободных эмодзи и иконок. Лицензия: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link></Footer>
 		</React.Fragment>

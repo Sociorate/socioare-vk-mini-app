@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
 
 import {
     Panel,
@@ -106,11 +105,6 @@ function Friends({ id, go }) {
             {snackbar}
         </Panel>
     )
-}
-
-Friends.propTypes = {
-    id: PropTypes.string.isRequired,
-    go: PropTypes.func.isRequired,
 }
 
 function FriendsDisplay({ go, setSnackbar, accessToken, friends }) {

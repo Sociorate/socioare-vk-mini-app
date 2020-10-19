@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
-
 import {
 	Panel,
 	PanelHeader,
@@ -86,11 +84,6 @@ function Home({ id, go }) {
 			{view}
 		</Panel>
 	)
-}
-
-Home.propTypes = {
-	id: PropTypes.string.isRequired,
-	go: PropTypes.func.isRequired,
 }
 
 function LastViewedProfilesPlaceholder() {

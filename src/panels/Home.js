@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
 	Panel,
 	PanelHeader,
@@ -118,26 +118,10 @@ function ProfileSelection({ go }) {
 				return
 			}
 
-			let accessData = null
-
-			try {
-				accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
-			} catch (err) {
-				if (err.error_data.error_code !== 4) {
-					console.error(err)
-					showErrorSnackbar(setSnackbar, 'Не удалось получить разрешение')
-					return
-				}
-			}
-
-			if (accessData == null) {
-				showErrorSnackbar(setSnackbar, 'Пожалуйста, предоставьте разрешения для корректной работы приложения')
-				return
-			}
-
 			let users = []
 
 			try {
+				let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
 				users = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: data, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response
 			} catch (err) {
 				if (err.error_data.error_code !== 1) {
@@ -156,138 +140,76 @@ function ProfileSelection({ go }) {
 		fetchLastViewedProfiles()
 	}, [go])
 
+	const loadUser = useCallback(async (stringWithUserID) => {
+		try {
+			let index = stringWithUserID.lastIndexOf('@')
+			if (index === -1) {
+				index = stringWithUserID.lastIndexOf('/')
+			}
+
+			let userid = stringWithUserID.substring(index + 1)
+
+			let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
+			let user = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: userid, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response[0]
+
+			if (!user) {
+				showErrorSnackbar(setSnackbar, 'Пользователь не найден')
+				return
+			}
+
+			go('profile', user)
+		} catch (err) {
+			if (err.error_data.error_code === 1) {
+				showErrorSnackbar(setSnackbar, 'Пользователь не найден')
+			} else {
+				console.error(err)
+				showErrorSnackbar(setSnackbar, 'Не удалось загрузить профиль')
+			}
+		}
+	}, [go])
+
 	return (
 		<React.Fragment>
 			<Group>
 				<SimpleCell before={<Icon28Profile />} onClick={async () => {
-					let user = null
-
 					try {
-						user = await bridge.send('VKWebAppGetUserInfo')
+						let user = await bridge.send('VKWebAppGetUserInfo')
+						if (user) {
+							go('profile', user)
+						}
 					} catch (err) {
 						console.error(err)
 						showErrorSnackbar(setSnackbar, 'Не удалось получить информацию о текущем профиле')
-						return
 					}
-
-					go('profile', user.screen_name ? user.screen_name : `id${user.id}`)
 				}}>Мой профиль</SimpleCell>
 
 				{platformSwitch(['mobile_android', 'mobile_iphone'],
 					<SimpleCell before={<Icon28QrCodeOutline />} onClick={async () => {
-						let code = ''
 						try {
-							code = (await bridge.send("VKWebAppOpenCodeReader")).code_data
+							let code = (await bridge.send("VKWebAppOpenCodeReader")).code_data
+							loadUser(code)
 						} catch (err) {
 							if (err.error_data.error_code !== 4) {
 								console.error(err)
-								showErrorSnackbar(setSnackbar, 'Не удалось запустить QR сканер')
-							}
-							return
-						}
-
-						let index = code.lastIndexOf('#@')
-						if (index === -1) {
-							index = code.lastIndexOf('/') + 1
-						} else {
-							index += 2
-						}
-
-						let userid = code.substring(index)
-
-						let accessData = null
-
-						try {
-							accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
-						} catch (err) {
-							if (err.error_data.error_code !== 4) {
-								console.error(err)
-								showErrorSnackbar(setSnackbar, 'Не удалось получить разрешение')
-								return
+								showErrorSnackbar(setSnackbar, 'Не удалось запустить сканер QR кода')
 							}
 						}
-
-						if (accessData == null) {
-							showErrorSnackbar(setSnackbar, 'Для работы этой функции необходимо предоставить разрешение.')
-							return
-						}
-
-						let users = null
-
-						try {
-							users = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: userid, fields: 'screen_name', v: '5.124', access_token: accessData.access_token } })).response
-						} catch (err) {
-							if (err.error_data.error_code === 1) {
-								showErrorSnackbar(setSnackbar, 'Пользователь не найден')
-							} else {
-								console.error(err)
-								showErrorSnackbar(setSnackbar, 'Не удалось загрузить профиль')
-							}
-							return
-						}
-
-						if (users == null || users.length === 0) {
-							showErrorSnackbar(setSnackbar, 'Пользователь не найден')
-							return
-						}
-
-						let user = users[0]
-
-						go('profile', user.screen_name ? user.screen_name : `id${user.id}`)
 					}}>Открыть по QR коду</SimpleCell>
 				)}
 
 				<SimpleCell before={<Icon28UserOutline />} onClick={() => { go('friends') }}>Выбрать из друзей</SimpleCell>
 
 				<FormLayout>
-					<Input top='Открыть по @ID' value={userIDInput} onChange={(event) => {
+					<Input top='Открыть по @ID или ссылке' value={userIDInput} onChange={(event) => {
 						setUserIDInput(event.target.value)
-					}} type='text' placeholder='Введите ID' />
+					}} type='text' placeholder='Введите ID или ссылку' />
 					<Button size='xl' onClick={async () => {
 						if (userIDInput === '') {
-							showErrorSnackbar(setSnackbar, 'Введите ID профиля ВКонтакте.')
+							showErrorSnackbar(setSnackbar, 'Введите ID профиля ВКонтакте или ссылку.')
 							return
 						}
 
-						let accessData = null
-
-						try {
-							accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
-						} catch (err) {
-							if (err.error_data.error_code !== 4) {
-								console.error(err)
-								showErrorSnackbar(setSnackbar, 'Не удалось получить разрешение')
-								return
-							}
-						}
-
-						if (accessData == null) {
-							showErrorSnackbar(setSnackbar, 'Для работы этой функции необходимо предоставить разрешение.')
-							return
-						}
-
-						let users = null
-
-						try {
-							users = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: userIDInput, fields: 'screen_name', v: '5.124', access_token: accessData.access_token } })).response
-						} catch (err) {
-							if (err.error_data.error_code === 1) {
-								showErrorSnackbar(setSnackbar, 'Пользователь с таким ID не существует')
-							} else {
-								console.error(err)
-								showErrorSnackbar(setSnackbar, 'Не удалось загрузить профиль')
-							}
-							return
-						}
-
-						if (users == null || users.length === 0) {
-							showErrorSnackbar(setSnackbar, 'Пользователь с таким ID не существует')
-							return
-						}
-
-						let user = users[0]
-
-						go('profile', user.screen_name ? user.screen_name : `id${user.id}`)
+						loadUser(userIDInput)
 					}}>Открыть</Button>
 				</FormLayout>
 			</Group>
@@ -318,8 +240,9 @@ function Other() {
 							console.error(err)
 							showErrorSnackbar(setSnackbar, 'Не удалось добавить приложение на главный экран')
 						}
+						return
 					}
-					showSuccessSnackbar(setSnackbar, 'Спасибо, за добавление Sociorate на главный экран!')
+					showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate на главный экран!')
 				}}>Добавить на глав. экран</SimpleCell>
 			)}
 

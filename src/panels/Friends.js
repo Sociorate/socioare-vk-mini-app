@@ -48,7 +48,17 @@ function Friends({ id, go }) {
             }
 
             if (friend != null) {
-                go('profile', friend.screen_name ? friend.screen_name : `id${friend.id}`)
+                let fetchedFriend = null
+                try {
+                    let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
+                    let users = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: friend.id, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response
+                    fetchedFriend = users[0]
+                } catch (err) {
+                    console.log(err)
+                }
+
+                go('profile', fetchedFriend ? fetchedFriend : friend)
+
                 return
             }
 
@@ -59,7 +69,7 @@ function Friends({ id, go }) {
             } catch (err) {
                 if (err.error_data.error_code !== 4) {
                     console.error(err)
-                    showErrorSnackbar(setSnackbar, 'Не удалось получить разрешение')
+                    showErrorSnackbar(setSnackbar, 'Не удалось получить список друзей')
                     return
                 }
             }
@@ -82,7 +92,7 @@ function Friends({ id, go }) {
             setFriendsView(<PanelSpinner />)
 
             try {
-                friends = (await bridge.send('VKWebAppCallAPIMethod', { method: 'friends.get', params: { order: 'name', fields: 'photo_200', v: '5.124', access_token: accessData.access_token } })).response.items
+                friends = (await bridge.send('VKWebAppCallAPIMethod', { method: 'friends.get', params: { order: 'name', fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response.items
             } catch (err) {
                 console.error(err)
                 showErrorSnackbar(setSnackbar, 'Не удалось получить список друзей')
@@ -126,11 +136,11 @@ function FriendsDisplay({ go, setSnackbar, accessToken, friends }) {
 
                 setFriendsCells(<PanelSpinner />)
                 try {
-                    friendsSearch = (await bridge.send('VKWebAppCallAPIMethod', { method: 'friends.search', params: { q: userInput, fields: 'photo_200', v: '5.124', access_token: accessToken } })).response.items
+                    friendsSearch = (await bridge.send('VKWebAppCallAPIMethod', { method: 'friends.search', params: { q: userInput, fields: 'photo_200,screen_name', v: '5.124', access_token: accessToken } })).response.items
                 } catch (err) {
                     if (err.error_data.error_code !== 1) {
                         console.error(err)
-                        showErrorSnackbar(setSnackbar, 'Не удалось выполнить пойск по друзьям')
+                        showErrorSnackbar(setSnackbar, 'Не удалось выполнить поиск по друзьям')
                     }
                 }
 

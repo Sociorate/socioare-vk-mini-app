@@ -26,6 +26,7 @@ import {
 	Icon28HomeOutline,
 	Icon28LogoVkOutline,
 	Icon28SmartphoneOutline,
+	Icon28BugOutline,
 	Icon56HistoryOutline,
 } from '@vkontakte/icons'
 
@@ -223,8 +224,7 @@ function ProfileSelection({ go }) {
 	)
 }
 
-// TODO: кнопка для смены темы (три режима: автоматический, тёмный, светлый)
-// TODO: кнопка "Сообщить об ошибке"
+// TODO: кнопка с выпадающим списком для смены темы (три режима: автоматический, тёмный, светлый)
 
 function Other() {
 	const [snackbar, setSnackbar] = useState(null)
@@ -284,10 +284,17 @@ function Other() {
 				description="Следите за новостями!"
 			>Паблик Sociorate</SimpleCell>
 
+			<SimpleCell
+				href='https://vk.me/sociorate' target='_blank'
+				before={<Icon28BugOutline />}
+			>
+				Сообщить об ошибке
+			</SimpleCell>
+
 			<Footer>Все эмодзи сделаны <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – проект свободных эмодзи и иконок. Лицензия: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link><br />All emojis designed by <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – the open-source emoji and icon project. License: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link></Footer>
 
-			{snackbar}
-		</Group>
+			{ snackbar}
+		</Group >
 	)
 }
 

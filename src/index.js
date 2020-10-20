@@ -44,6 +44,19 @@ function App() {
     const [reCaptchaTheme, setReCaptchaTheme] = useState('light')
     const [reCaptchaLoaded, setReCaptchaLoaded] = useState(false)
 
+    const changeTheme = useCallback((themeName) => {
+        const schemeAttribute = document.createAttribute('scheme')
+        switch (themeName) {
+            case 'dark':
+                schemeAttribute.value = 'space_gray'
+                setReCaptchaTheme('dark')
+                break
+            default:
+                schemeAttribute.value = 'client_light'
+                setReCaptchaTheme('light')
+        }
+        document.body.attributes.setNamedItem(schemeAttribute)
+    }, [])
 
     useEffect(() => {
         const fetchCurrentUserID = async () => {
@@ -62,17 +75,14 @@ function App() {
 
         const handler = ({ detail: { type, data } }) => {
             if (type === 'VKWebAppUpdateConfig') {
-                const schemeAttribute = document.createAttribute('scheme')
-                schemeAttribute.value = data.scheme ? data.scheme : 'client_light'
-                setReCaptchaTheme(schemeAttribute.value === 'space_gray' ? 'dark' : 'light')
-                document.body.attributes.setNamedItem(schemeAttribute)
+                changeTheme(data.scheme === 'space_gray' ? 'dark' : 'light')
             }
         }
 
         bridge.subscribe(handler)
 
         return () => { bridge.unsubscribe(handler) }
-    }, [])
+    }, [changeTheme])
 
     const go = useCallback((panelid, user) => {
         if (user) {

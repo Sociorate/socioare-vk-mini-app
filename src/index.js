@@ -53,14 +53,19 @@ function App() {
 
     const executeReCaptcha = useCallback((callback) => {
         reCaptchaCallback = (token, error, haveExpired) => {
-            if (token || error) {
-                setPopout(null)
-                callback(token, error)
-            } else if (haveExpired === true) {
-                setPopout(null)
-                callback(token, new Error("Captcha have expired"))
-                reCaptchaRef.current.reset()
+            if (!token && !error) {
+                return
             }
+
+            setPopout(null)
+
+            if (haveExpired) {
+                callback(null, new Error("Captcha have expired"))
+            } else {
+                callback(token, error)
+            }
+
+            reCaptchaRef.current.reset()
         }
 
         setPopout(
@@ -72,7 +77,9 @@ function App() {
                 }]}
                 onClose={() => {
                     reCaptchaCallback = null
+
                     setPopout(null)
+
                     reCaptchaRef.current.reset()
                 }}
             >

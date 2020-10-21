@@ -10,11 +10,14 @@ import React, {
     useCallback,
     useRef,
 } from 'react'
+
 import ReactDOM from 'react-dom'
 
 import {
     ScreenSpinner,
     View,
+    Alert,
+    Headline,
 } from '@vkontakte/vkui/'
 
 import Home from './panels/Home'
@@ -30,8 +33,9 @@ bridge.send('VKWebAppInit')
 
 window.recaptchaOptions = { useRecaptchaNet: true }
 
-// TODO: слайдшоу с объяснением работы
-// TODO: блять ничего не должно тормозить
+// TODO: слайдшоу с объяснением работы (не понимают что это и зачем это же)
+
+var reCaptchaCallback = null
 
 function App() {
     const [activePanel, setActivePanel] = useState('home')
@@ -43,6 +47,41 @@ function App() {
     const reCaptchaRef = useRef()
     const [reCaptchaTheme, setReCaptchaTheme] = useState('light')
     const [reCaptchaLoaded, setReCaptchaLoaded] = useState(false)
+
+    const [autoTheme, setAutoTheme] = useState('light')
+    const [themeOption, setThemeOption] = useState('auto')
+
+    const executeReCaptcha = useCallback((callback) => {
+        reCaptchaCallback = (token, error, haveExpired) => {
+            if (token || error) {
+                setPopout(null)
+                callback(token, error)
+            } else if (haveExpired === true) {
+                setPopout(null)
+                callback(token, new Error("Captcha have expired"))
+                reCaptchaRef.current.reset()
+            }
+        }
+
+        setPopout(
+            <Alert
+                actions={[{
+                    title: 'Отмена',
+                    autoclose: true,
+                    mode: 'cancel'
+                }]}
+                onClose={() => {
+                    reCaptchaCallback = null
+                    setPopout(null)
+                    reCaptchaRef.current.reset()
+                }}
+            >
+                <Headline weight="regular">Проверка ReCAPTCHA...</Headline>
+            </Alert>
+        )
+
+        reCaptchaRef.current.execute()
+    }, [])
 
     const changeTheme = useCallback((themeName) => {
         const schemeAttribute = document.createAttribute('scheme')
@@ -56,6 +95,25 @@ function App() {
                 setReCaptchaTheme('light')
         }
         document.body.attributes.setNamedItem(schemeAttribute)
+    }, [])
+
+    useEffect(() => {
+        if (themeOption === 'auto') {
+            changeTheme(autoTheme)
+            return
+        }
+
+        changeTheme(themeOption)
+    }, [autoTheme, changeTheme, themeOption])
+
+    const changeThemeOption = useCallback(async (newThemeOption) => {
+        setThemeOption(newThemeOption)
+
+        try {
+            await bridge.send('VKWebAppStorageSet', { key: 'theme_option', value: newThemeOption })
+        } catch (err) {
+            console.error(err)
+        }
     }, [])
 
     useEffect(() => {
@@ -73,9 +131,21 @@ function App() {
         }
         fetchCurrentUserID()
 
+        const fetchThemeOption = async () => {
+            try {
+                let storedThemeOption = (await bridge.send('VKWebAppStorageGet', { keys: ['theme_option'] })).keys[0].value
+                if (storedThemeOption) {
+                    setThemeOption(storedThemeOption)
+                }
+            } catch (err) {
+                console.error(err)
+            }
+        }
+        fetchThemeOption()
+
         const handler = ({ detail: { type, data } }) => {
             if (type === 'VKWebAppUpdateConfig') {
-                changeTheme(data.scheme === 'space_gray' ? 'dark' : 'light')
+                setAutoTheme(data.scheme === 'space_gray' ? 'dark' : 'light')
             }
         }
 
@@ -111,7 +181,7 @@ function App() {
                 let user = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: userid, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response[0]
 
                 if (!user) {
-                    return
+                    throw new Error('`user` is empty')
                 }
 
                 go('profile', user)
@@ -131,11 +201,26 @@ function App() {
             asyncScriptOnLoad={() => {
                 setReCaptchaLoaded(true)
             }}
+            onChange={(value) => {
+                if (reCaptchaCallback != null) {
+                    reCaptchaCallback(value, null, false)
+                }
+            }}
+            onErrored={(error) => {
+                if (reCaptchaCallback != null) {
+                    reCaptchaCallback(null, error, false)
+                }
+            }}
+            onExpired={() => {
+                if (reCaptchaCallback != null) {
+                    reCaptchaCallback(null, null, true)
+                }
+            }}
         >
             <View activePanel={reCaptchaLoaded ? activePanel : 'home'} popout={reCaptchaLoaded ? popout : <ScreenSpinner />}>
-                <Home id='home' go={go} />
+                <Home id='home' go={go} setPopout={setPopout} changeThemeOption={changeThemeOption} />
                 <Friends id='friends' go={go} />
-                <Profile id='profile' go={go} setPopout={setPopout} reCaptchaRef={reCaptchaRef} currentUserID={currentUserID} user={panelProfileUser} />
+                <Profile id='profile' go={go} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUserID={currentUserID} user={panelProfileUser} />
             </View>
         </ReCAPTCHA>
     )

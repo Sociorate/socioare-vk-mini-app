@@ -16,6 +16,8 @@ import {
 	Link,
 	Separator,
 	Footer,
+	ActionSheet,
+	ActionSheetItem,
 } from '@vkontakte/vkui'
 
 import {
@@ -27,6 +29,9 @@ import {
 	Icon28LogoVkOutline,
 	Icon28SmartphoneOutline,
 	Icon28BugOutline,
+	Icon28PaintRollerOutline,
+	Icon28SmileOutline,
+	Icon28MoonOutline,
 	Icon56HistoryOutline,
 } from '@vkontakte/icons'
 
@@ -41,7 +46,7 @@ import UsersList from './_UsersList'
 
 import platformSwitch from './_platformSwitch'
 
-function Home({ id, go }) {
+function Home({ id, go, setPopout, changeThemeOption }) {
 	const [currentTab, setCurrentTab] = useState('profile_selection')
 
 	let view = null
@@ -51,7 +56,7 @@ function Home({ id, go }) {
 			view = <ProfileSelection go={go} />
 			break
 		case 'other':
-			view = <Other />
+			view = <Other setPopout={setPopout} changeThemeOption={changeThemeOption} />
 			break
 		default:
 			view = null
@@ -175,9 +180,19 @@ function ProfileSelection({ go }) {
 				<SimpleCell before={<Icon28Profile />} onClick={async () => {
 					try {
 						let user = await bridge.send('VKWebAppGetUserInfo')
-						if (user) {
-							go('profile', user)
+
+						try {
+							let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
+							user = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: user.id, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response[0]
+						} catch (err) {
+							console.log(err)
 						}
+
+						if (!user) {
+							throw new Error('`user` is empty')
+						}
+
+						go('profile', user)
 					} catch (err) {
 						console.error(err)
 						showErrorSnackbar(setSnackbar, 'Не удалось получить информацию о текущем профиле')
@@ -224,9 +239,7 @@ function ProfileSelection({ go }) {
 	)
 }
 
-// TODO: кнопка с выпадающим списком для смены темы (три режима: автоматический, тёмный, светлый)
-
-function Other() {
+function Other({ setPopout, changeThemeOption }) {
 	const [snackbar, setSnackbar] = useState(null)
 
 	return (
@@ -291,10 +304,27 @@ function Other() {
 				Сообщить об ошибке
 			</SimpleCell>
 
+			<Separator />
+
+			<SimpleCell
+				before={<Icon28PaintRollerOutline />}
+				onClick={() => {
+					setPopout(
+						<ActionSheet onClose={() => { setPopout(null) }}>
+							<ActionSheetItem autoclose before={<Icon28SmileOutline />} onClick={() => { changeThemeOption("light") }}>Светлая</ActionSheetItem>
+							<ActionSheetItem autoclose before={<Icon28MoonOutline />} onClick={() => { changeThemeOption("dark") }}>Тёмная</ActionSheetItem>
+							<ActionSheetItem autoclose mode="cancel" onClick={() => { changeThemeOption("auto") }}>Автоматически</ActionSheetItem>
+						</ActionSheet>
+					)
+				}}
+			>
+				Сменить цветовую тему
+			</SimpleCell>
+
 			<Footer>Все эмодзи сделаны <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – проект свободных эмодзи и иконок. Лицензия: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link><br />All emojis designed by <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – the open-source emoji and icon project. License: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link></Footer>
 
-			{ snackbar}
-		</Group >
+			{snackbar}
+		</Group>
 	)
 }
 

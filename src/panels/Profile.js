@@ -1,6 +1,7 @@
 import React, {
 	useEffect,
 	useState,
+	useCallback,
 } from 'react'
 
 import {
@@ -21,6 +22,7 @@ import {
 	PanelSpinner,
 	Alert,
 	Title,
+	PullToRefresh,
 } from '@vkontakte/vkui'
 
 import {
@@ -52,7 +54,7 @@ import HateEmoji from 'openmoji/color/svg/1F621.svg'
 // TODO: рекламный баннер внизу экрана профиля
 // TODO: скачивание qr кода
 
-function Profile({ id, go, setPopout, reCaptchaRef, currentUserID, user }) {
+function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
 	const [snackbar, setSnackbar] = useState(null)
 
 	useEffect(() => {
@@ -97,49 +99,23 @@ function Profile({ id, go, setPopout, reCaptchaRef, currentUserID, user }) {
 		<Panel id={id}>
 			<PanelHeader left={<PanelHeaderBack onClick={() => { go('home') }} />}><PanelHeaderContent>{user == null ? `Загрузка профиля` : `@${user.screen_name ? user.screen_name : `id${user.id}`}`}</PanelHeaderContent></PanelHeader>
 
-			{user ? <UserProfile setPopout={setPopout} setSnackbar={setSnackbar} reCaptchaRef={reCaptchaRef} currentUserID={currentUserID} user={user} /> : null}
+			{user ? <UserProfile setPopout={setPopout} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} currentUserID={currentUserID} user={user} /> : null}
 
 			{snackbar}
 		</Panel>
 	)
 }
 
-// TODO: spinner popout
-function RateButton({ imageSrc, code, userid, setSnackbar, reCaptchaRef }) {
-	const [buttonMode, setButtonMode] = useState('tertiary')
-
+function RateButton({ imageSrc, code, chooseRate }) {
 	return (
 		<Button
 			style={{
 				position: 'relative',
 				width: '63px',
 			}}
-			mode={buttonMode}
-			onClick={async () => {
-				let reCaptchaToken = null
-				try {
-					reCaptchaRef.current.reset()
-					reCaptchaToken = await reCaptchaRef.current.executeAsync()
-				} catch (err) {
-					console.error(err)
-				}
-
-				if (reCaptchaToken == null) {
-					showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
-					return
-				}
-
-				try {
-					await postRating(userid, code, reCaptchaToken)
-				} catch (err) {
-					console.error(err)
-					showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
-					return
-				}
-
-				setButtonMode('commerce')
-				setTimeout(() => { setButtonMode('tertiary') }, 2000)
-				showSuccessSnackbar(setSnackbar, 'Спасибо за ваш вклад!')
+			mode='tertiary'
+			onClick={() => {
+				chooseRate(code)
 			}}
 		>
 			<img style={{
@@ -156,7 +132,27 @@ function RateButton({ imageSrc, code, userid, setSnackbar, reCaptchaRef }) {
 	)
 }
 
-function RatingButtons({ userid, setSnackbar, reCaptchaRef }) {
+function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
+	const chooseRate = useCallback((rate) => {
+		executeReCaptcha(async (token, error) => {
+			if (token) {
+				try {
+					await postRating(userid, rate, token)
+				} catch (err) {
+					console.error(err)
+					showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
+					return
+				}
+
+				showSuccessSnackbar(setSnackbar, 'Спасибо за ваш вклад!')
+				fetchRating()
+			} else if (error) {
+				console.log(error)
+				showErrorSnackbar(setSnackbar, 'Не выполнить проверку ReCAPTCHA')
+			}
+		})
+	}, [executeReCaptcha, userid, setSnackbar, fetchRating])
+
 	return (
 		<React.Fragment>
 			<Div style={{
@@ -165,11 +161,11 @@ function RatingButtons({ userid, setSnackbar, reCaptchaRef }) {
 				height: '63px',
 				marginTop: '10px'
 			}}>
-				<RateButton imageSrc={HateEmoji} code='1' userid={userid} setSnackbar={setSnackbar} reCaptchaRef={reCaptchaRef} />
-				<RateButton imageSrc={DislikeEmoji} code='2' userid={userid} setSnackbar={setSnackbar} reCaptchaRef={reCaptchaRef} />
-				<RateButton imageSrc={NeutralEmoji} code='3' userid={userid} setSnackbar={setSnackbar} reCaptchaRef={reCaptchaRef} />
-				<RateButton imageSrc={LikeEmoji} code='4' userid={userid} setSnackbar={setSnackbar} reCaptchaRef={reCaptchaRef} />
-				<RateButton imageSrc={LoveEmoji} code='5' userid={userid} setSnackbar={setSnackbar} reCaptchaRef={reCaptchaRef} />
+				<RateButton imageSrc={HateEmoji} code='1' chooseRate={chooseRate} />
+				<RateButton imageSrc={DislikeEmoji} code='2' chooseRate={chooseRate} />
+				<RateButton imageSrc={NeutralEmoji} code='3' chooseRate={chooseRate} />
+				<RateButton imageSrc={LikeEmoji} code='4' chooseRate={chooseRate} />
+				<RateButton imageSrc={LoveEmoji} code='5' chooseRate={chooseRate} />
 			</Div>
 
 			<Footer style={{ marginTop: '12px' }}>Оценивайте людей после каждой встречи нажимая на эмодзи выше</Footer>
@@ -291,34 +287,42 @@ const RatingCard = ({ rating }) => {
 	return ratingCard
 }
 
-// TODO: refresh, pull to refresh
-function UserProfile({ setPopout, setSnackbar, reCaptchaRef, currentUserID, user }) {
+function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, user }) {
+	const [isFetching, setIsFetching] = useState(false)
 	const [rating, setRating] = useState(null)
 
-	useEffect(() => {
-		const fetchRating = async () => {
-			let data = null
-			try {
-				data = await getRating(user.id)
-			} catch (err) {
-				console.error(err)
-			}
-
-			if (data == null || !data.rating) {
-				showErrorSnackbar(setSnackbar, "Не удалось получить данные о рейтинге")
-				return
-			}
-
-			setRating(data.rating)
+	const fetchRating = useCallback(async () => {
+		let data = null
+		try {
+			data = await getRating(user.id)
+		} catch (err) {
+			console.error(err)
 		}
-		fetchRating()
+
+		if (data == null || !data.rating) {
+			showErrorSnackbar(setSnackbar, "Не удалось получить данные о рейтинге")
+			return
+		}
+
+		setRating(data.rating)
 	}, [setSnackbar, user])
 
+	useEffect(() => {
+		fetchRating()
+	}, [fetchRating])
+
 	return (
-		<React.Fragment>
+		<PullToRefresh
+			onRefresh={async () => {
+				setIsFetching(true)
+				await fetchRating()
+				setIsFetching(false)
+			}}
+			isFetching={isFetching}
+		>
 			<RichCell
 				disabled
-				before={<Avatar size={81} src={user.photo_200} />}
+				before={<Avatar size={80} src={user.photo_200} />}
 				actions={
 					<div style={{ display: 'flex' }}>
 						<Button mode='tertiary' stretched
@@ -383,12 +387,12 @@ function UserProfile({ setPopout, setSnackbar, reCaptchaRef, currentUserID, user
 				<Title level="3" weight="regular">{user.first_name + ' ' + user.last_name}</Title>
 			</RichCell>
 
-			{currentUserID !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} reCaptchaRef={reCaptchaRef} /> : null}
+			{currentUserID !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} fetchRating={fetchRating} /> : null}
 
 			{rating != null ? <RatingCard rating={rating} /> : <PanelSpinner />}
 
 			<Footer>Все эмодзи сделаны <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – проект свободных эмодзи и иконок. Лицензия: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link></Footer>
-		</React.Fragment>
+		</PullToRefresh>
 	)
 }
 

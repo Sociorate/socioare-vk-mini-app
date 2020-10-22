@@ -139,8 +139,12 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 				try {
 					await postRating(userid, rate, token)
 				} catch (err) {
-					console.error(err)
-					showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
+					if (err.code === 98765) {
+						showErrorSnackbar(setSnackbar, "Простите, это действие возможно только раз в минуту")
+					} else {
+						console.error(err)
+						showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
+					}
 					return
 				}
 
@@ -219,26 +223,36 @@ function RatingCardBar({ emoji, emojiAlt, biggestCount, color, count }) {
 // [2] - 3
 // [1] - 2
 // [0] - 1
-const RatingCard = ({ rating }) => {
+function RatingCard({ rating }) {
 	const [ratingCard, setRatingCard] = useState(null)
 	useEffect(() => {
-		if (rating == null || rating.length !== 5) {
+		if (rating == null) {
 			return
+		}
+
+		let ratingSum = [0, 0, 0, 0, 0]
+
+		for (let i = 0; i < rating.length; i++) {
+			ratingSum[0] += rating[i][0]
+			ratingSum[1] += rating[i][1]
+			ratingSum[2] += rating[i][2]
+			ratingSum[3] += rating[i][3]
+			ratingSum[4] += rating[i][4]
 		}
 
 		let biggestCount = 0
 		let allCount = 0
 
-		for (var i = 0; i < rating.length; i++) {
-			allCount += rating[i]
-			biggestCount = Math.max(biggestCount, rating[i]);
+		for (let i = 0; i < ratingSum.length; i++) {
+			allCount += ratingSum[i]
+			biggestCount = Math.max(biggestCount, ratingSum[i]);
 		}
 
 		let averageRatingEmoji = null
 		let averageRating = 0
 
 		if (allCount >= 3) {
-			let averageRating = (5 * rating[4] + 4 * rating[3] + 3 * rating[2] + 2 * rating[1] + rating[0]) / allCount
+			let averageRating = (5 * ratingSum[4] + 4 * ratingSum[3] + 3 * ratingSum[2] + 2 * ratingSum[1] + ratingSum[0]) / allCount
 
 			// Hate:    1.0 - 1.8
 			// Dislike: 1.8 - 2.6
@@ -267,11 +281,11 @@ const RatingCard = ({ rating }) => {
 				<Card size='l'>
 					<Card size='l' mode='shadow'>
 						<Div>
-							<RatingCardBar emoji={LoveEmoji} emojiAlt='5' biggestCount={biggestCount} color='#4CAF50' count={rating[4]} />
-							<RatingCardBar emoji={LikeEmoji} emojiAlt='4' biggestCount={biggestCount} color='#2196F3' count={rating[3]} />
-							<RatingCardBar emoji={NeutralEmoji} emojiAlt='3' biggestCount={biggestCount} color='#00bcd4' count={rating[2]} />
-							<RatingCardBar emoji={DislikeEmoji} emojiAlt='2' biggestCount={biggestCount} color='#ff9800' count={rating[1]} />
-							<RatingCardBar emoji={HateEmoji} emojiAlt='1' biggestCount={biggestCount} color='#f44336' count={rating[0]} />
+							<RatingCardBar emoji={LoveEmoji} emojiAlt='5' biggestCount={biggestCount} color='#4CAF50' count={ratingSum[4]} />
+							<RatingCardBar emoji={LikeEmoji} emojiAlt='4' biggestCount={biggestCount} color='#2196F3' count={ratingSum[3]} />
+							<RatingCardBar emoji={NeutralEmoji} emojiAlt='3' biggestCount={biggestCount} color='#00bcd4' count={ratingSum[2]} />
+							<RatingCardBar emoji={DislikeEmoji} emojiAlt='2' biggestCount={biggestCount} color='#ff9800' count={ratingSum[1]} />
+							<RatingCardBar emoji={HateEmoji} emojiAlt='1' biggestCount={biggestCount} color='#f44336' count={ratingSum[0]} />
 						</Div>
 					</Card>
 					{averageRatingEmoji ? <img style={{
@@ -299,7 +313,7 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 			console.error(err)
 		}
 
-		if (data == null || !data.rating) {
+		if (data == null || !data.rating || data.rating.length !== 7) {
 			showErrorSnackbar(setSnackbar, "Не удалось получить данные о рейтинге")
 			return
 		}

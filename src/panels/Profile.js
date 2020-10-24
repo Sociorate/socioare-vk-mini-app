@@ -140,7 +140,7 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 					await postRating(userid, rate, token)
 				} catch (err) {
 					if (err.code === 98765) {
-						showErrorSnackbar(setSnackbar, "Простите, это действие возможно только раз в минуту")
+						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно раз в минуту")
 					} else {
 						console.error(err)
 						showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
@@ -148,7 +148,7 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 					return
 				}
 
-				showSuccessSnackbar(setSnackbar, 'Спасибо за ваш вклад!')
+				showSuccessSnackbar(setSnackbar, 'Спасибо за вашу оценку!')
 				fetchRating()
 			} else if (error) {
 				console.log(error)

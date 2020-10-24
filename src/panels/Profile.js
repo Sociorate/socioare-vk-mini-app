@@ -53,6 +53,7 @@ import HateEmoji from 'openmoji/color/svg/1F621.svg'
 
 // TODO: рекламный баннер внизу экрана профиля
 // TODO: скачивание qr кода
+// TODO: просмотра статистики за последние 7 дней
 
 function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
 	const [snackbar, setSnackbar] = useState(null)
@@ -398,7 +399,7 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 					</div>
 				}
 			>
-				<Title level="3" weight="regular">{user.first_name + ' ' + user.last_name}</Title>
+				<Title level="2" weight="regular">{`${user.first_name} ${user.last_name}`}</Title>
 			</RichCell>
 
 			{currentUserID !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} fetchRating={fetchRating} /> : null}

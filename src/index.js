@@ -14,8 +14,8 @@ import React, {
 import ReactDOM from 'react-dom'
 
 import {
-    ScreenSpinner,
     View,
+    ScreenSpinner,
     Alert,
     Headline,
 } from '@vkontakte/vkui/'
@@ -28,16 +28,16 @@ import bridge from '@vkontakte/vk-bridge'
 
 import ReCAPTCHA from "react-google-recaptcha"
 
-// Init VK Mini App
-bridge.send('VKWebAppInit')
-
 window.recaptchaOptions = { useRecaptchaNet: true }
 
 // TODO: слайдшоу с объяснением работы (не понимают что это и зачем это же)
+// TODO: роутинг
 
 var reCaptchaCallback = null
 
 function App() {
+    const [vkWebAppInitDone, setVKWebAppInitDone] = useState(false)
+
     const [activePanel, setActivePanel] = useState('home')
     const [popout, setPopout] = useState(null)
 
@@ -50,6 +50,30 @@ function App() {
 
     const [autoTheme, setAutoTheme] = useState('light')
     const [themeOption, setThemeOption] = useState('auto')
+    const [themeLoaded, setThemeLoaded] = useState(false)
+
+    useEffect(() => {
+        const handler = ({ detail: { type, data } }) => {
+            if (type === 'VKWebAppUpdateConfig') {
+                setAutoTheme(data.scheme === 'space_gray' ? 'dark' : 'light')
+            }
+        }
+
+        const vkWebAppInit = async () => {
+            bridge.subscribe(handler)
+
+            try {
+                await bridge.send('VKWebAppInit')
+            } catch (err) {
+                console.error(err)
+            }
+
+            setVKWebAppInitDone(true)
+        }
+        vkWebAppInit()
+
+        return () => { bridge.unsubscribe(handler) }
+    }, [])
 
     const executeReCaptcha = useCallback((callback) => {
         reCaptchaCallback = (token, error, haveExpired) => {
@@ -124,20 +148,6 @@ function App() {
     }, [])
 
     useEffect(() => {
-        const fetchCurrentUserID = async () => {
-            try {
-                let user = await bridge.send('VKWebAppGetUserInfo')
-                if (!user.id) {
-                    return
-                }
-                setCurrentUserID(user.id)
-            } catch (err) {
-                console.error(err)
-                return
-            }
-        }
-        fetchCurrentUserID()
-
         const fetchThemeOption = async () => {
             try {
                 let storedThemeOption = (await bridge.send('VKWebAppStorageGet', { keys: ['theme_option'] })).keys[0].value
@@ -147,19 +157,24 @@ function App() {
             } catch (err) {
                 console.error(err)
             }
+
+            setThemeLoaded(true)
         }
         fetchThemeOption()
 
-        const handler = ({ detail: { type, data } }) => {
-            if (type === 'VKWebAppUpdateConfig') {
-                setAutoTheme(data.scheme === 'space_gray' ? 'dark' : 'light')
+        const fetchCurrentUserID = async () => {
+            try {
+                let user = await bridge.send('VKWebAppGetUserInfo')
+                if (!user.id) {
+                    return
+                }
+                setCurrentUserID(user.id)
+            } catch (err) {
+                console.error(err)
             }
         }
-
-        bridge.subscribe(handler)
-
-        return () => { bridge.unsubscribe(handler) }
-    }, [changeTheme])
+        fetchCurrentUserID()
+    }, [vkWebAppInitDone])
 
     const go = useCallback((panelid, user) => {
         if (user) {
@@ -170,6 +185,10 @@ function App() {
     }, [])
 
     useEffect(() => {
+        if (!vkWebAppInitDone) {
+            return
+        }
+
         const fetchUserFromLocationHash = async () => {
             try {
                 let userid = ''
@@ -197,7 +216,9 @@ function App() {
             }
         }
         fetchUserFromLocationHash()
-    }, [go])
+    }, [vkWebAppInitDone, go])
+
+    const isAppLoaded = reCaptchaLoaded && vkWebAppInitDone && themeLoaded && currentUserID
 
     return (
         <ReCAPTCHA
@@ -224,8 +245,8 @@ function App() {
                 }
             }}
         >
-            <View activePanel={reCaptchaLoaded ? activePanel : 'home'} popout={reCaptchaLoaded ? popout : <ScreenSpinner />}>
-                <Home id='home' go={go} setPopout={setPopout} changeThemeOption={changeThemeOption} />
+            <View activePanel={isAppLoaded ? activePanel : 'home'} popout={isAppLoaded ? popout : <ScreenSpinner />}>
+                <Home id='home' go={go} isAppLoaded={isAppLoaded} setPopout={setPopout} changeThemeOption={changeThemeOption} />
                 <Friends id='friends' go={go} />
                 <Profile id='profile' go={go} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUserID={currentUserID} user={panelProfileUser} />
             </View>

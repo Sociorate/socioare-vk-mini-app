@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
+
 import {
 	Panel,
 	PanelHeader,
 	PanelHeaderContent,
+	PullToRefresh,
 	Button,
 	Input,
 	FormLayout,
@@ -46,8 +48,14 @@ import UsersList from './_UsersList'
 
 import platformSwitch from './_platformSwitch'
 
-function Home({ id, go, setPopout, changeThemeOption }) {
+// TODO: улучшить вид кнопки "Мой профиль" + показывать средний рейтинг справа от кнопки "Мой профиль"
+
+function Home({ id, go, isAppLoaded, setPopout, changeThemeOption }) {
 	const [currentTab, setCurrentTab] = useState('profile_selection')
+
+	if (!isAppLoaded) {
+		return <Panel id={id} />
+	}
 
 	let view = null
 
@@ -102,49 +110,52 @@ function LastViewedProfilesPlaceholder() {
 }
 
 function ProfileSelection({ go }) {
+	const [isFetching, setIsFetching] = useState(false)
+
 	const [snackbar, setSnackbar] = useState(null)
 	const [userIDInput, setUserIDInput] = useState('')
 	const [lastProfilesView, setLastProfilesView] = useState(null)
 
-	useEffect(() => {
-		const fetchLastViewedProfiles = async () => {
-			setLastProfilesView(<PanelSpinner />)
+	const fetchLastViewedProfiles = useCallback(async () => {
+		setLastProfilesView(<PanelSpinner />)
 
-			let data = ''
+		let data = ''
 
-			try {
-				data = (await bridge.send('VKWebAppStorageGet', { keys: ['last_viewed_profiles'] })).keys[0].value
-			} catch (err) {
-				console.error(err)
-				showErrorSnackbar(setSnackbar, 'Не удалось загрузить последние открытые профили')
-			}
-
-			if (data === '') {
-				setLastProfilesView(LastViewedProfilesPlaceholder())
-				return
-			}
-
-			let users = []
-
-			try {
-				let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
-				users = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: data, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response
-			} catch (err) {
-				if (err.error_data.error_code !== 1) {
-					console.error(err)
-					showErrorSnackbar(setSnackbar, 'Не удалось загрузить профили')
-				}
-			}
-
-			if (users.length === 0) {
-				setLastProfilesView(LastViewedProfilesPlaceholder())
-				return
-			}
-
-			setLastProfilesView(<UsersList go={go} users={users} />)
+		try {
+			data = (await bridge.send('VKWebAppStorageGet', { keys: ['last_viewed_profiles'] })).keys[0].value
+		} catch (err) {
+			console.error(err)
+			showErrorSnackbar(setSnackbar, 'Не удалось загрузить последние открытые профили')
 		}
-		fetchLastViewedProfiles()
+
+		if (data === '') {
+			setLastProfilesView(LastViewedProfilesPlaceholder())
+			return
+		}
+
+		let users = []
+
+		try {
+			let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
+			users = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: data, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response
+		} catch (err) {
+			if (err.error_data.error_code !== 1) {
+				console.error(err)
+				showErrorSnackbar(setSnackbar, 'Не удалось загрузить профили')
+			}
+		}
+
+		if (users.length === 0) {
+			setLastProfilesView(LastViewedProfilesPlaceholder())
+			return
+		}
+
+		setLastProfilesView(<UsersList go={go} users={users} />)
 	}, [go])
+
+	useEffect(() => {
+		fetchLastViewedProfiles()
+	}, [fetchLastViewedProfiles])
 
 	const loadUser = useCallback(async (stringWithUserID) => {
 		try {
@@ -175,7 +186,14 @@ function ProfileSelection({ go }) {
 	}, [go])
 
 	return (
-		<React.Fragment>
+		<PullToRefresh
+			onRefresh={async () => {
+				setIsFetching(true)
+				await fetchLastViewedProfiles()
+				setIsFetching(false)
+			}}
+			isFetching={isFetching}
+		>
 			<Group>
 				<SimpleCell before={<Icon28Profile />} onClick={async () => {
 					try {
@@ -235,7 +253,7 @@ function ProfileSelection({ go }) {
 			</Group>
 
 			{snackbar}
-		</React.Fragment>
+		</PullToRefresh>
 	)
 }
 

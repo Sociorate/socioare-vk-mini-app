@@ -14,12 +14,14 @@ import React, {
 import ReactDOM from 'react-dom'
 
 import {
+    Panel,
     View,
     ScreenSpinner,
     Alert,
     Headline,
 } from '@vkontakte/vkui/'
 
+import Slideshow from './panels/Slideshow'
 import Home from './panels/Home'
 import Friends from './panels/Friends'
 import Profile from './panels/Profile'
@@ -30,7 +32,7 @@ import ReCAPTCHA from "react-google-recaptcha"
 
 window.recaptchaOptions = { useRecaptchaNet: true }
 
-// TODO: слайдшоу с объяснением работы (не понимают что это и зачем это же)
+// TODO: поле с id панели которая должна открыться после слайдшоу 
 // TODO: роутинг
 
 var reCaptchaCallback = null
@@ -51,6 +53,8 @@ function App() {
     const [autoTheme, setAutoTheme] = useState('light')
     const [themeOption, setThemeOption] = useState('auto')
     const [themeLoaded, setThemeLoaded] = useState(false)
+
+    const [isSlideshowDone, setIsSlideshowDone] = useState(null)
 
     useEffect(() => {
         const handler = ({ detail: { type, data } }) => {
@@ -148,19 +152,27 @@ function App() {
     }, [])
 
     useEffect(() => {
-        const fetchThemeOption = async () => {
+        const fetchThingsFromStorage = async () => {
+            let storedThemeOption = null
             try {
-                let storedThemeOption = (await bridge.send('VKWebAppStorageGet', { keys: ['theme_option'] })).keys[0].value
-                if (storedThemeOption) {
-                    setThemeOption(storedThemeOption)
-                }
+                storedThemeOption = (await bridge.send('VKWebAppStorageGet', { keys: ['theme_option', 'is_slideshow_done'] })).keys[0].value
+            } catch (err) {
+                console.error(err)
+            }
+            setThemeOption(String(storedThemeOption))
+            setThemeLoaded(true)
+
+            let storedIsSlideshowDone = null
+
+            try {
+                storedIsSlideshowDone = (await bridge.send('VKWebAppStorageGet', { keys: ['is_slideshow_done'] })).keys[0].value
             } catch (err) {
                 console.error(err)
             }
 
-            setThemeLoaded(true)
+            setIsSlideshowDone(Boolean(storedIsSlideshowDone))
         }
-        fetchThemeOption()
+        fetchThingsFromStorage()
 
         const fetchCurrentUserID = async () => {
             try {
@@ -218,7 +230,7 @@ function App() {
         fetchUserFromLocationHash()
     }, [vkWebAppInitDone, go])
 
-    const isAppLoaded = reCaptchaLoaded && vkWebAppInitDone && themeLoaded && currentUserID
+    const isAppLoaded = reCaptchaLoaded && vkWebAppInitDone && themeLoaded && currentUserID && isSlideshowDone != null
 
     return (
         <ReCAPTCHA
@@ -245,8 +257,18 @@ function App() {
                 }
             }}
         >
-            <View activePanel={isAppLoaded ? activePanel : 'home'} popout={isAppLoaded ? popout : <ScreenSpinner />}>
-                <Home id='home' go={go} isAppLoaded={isAppLoaded} setPopout={setPopout} changeThemeOption={changeThemeOption} />
+            <View activePanel={isAppLoaded ? (isSlideshowDone ? activePanel : 'slideshow') : 'blank'} popout={isAppLoaded ? popout : <ScreenSpinner />}>
+                <Panel id='blank' />
+                <Slideshow id='slideshow' go={go} doneCallback={async () => {
+                    setIsSlideshowDone(true)
+
+                    try {
+                        await bridge.send('VKWebAppStorageSet', { key: 'is_slideshow_done', value: 'true' })
+                    } catch (err) {
+                        console.error(err)
+                    }
+                }} />
+                <Home id='home' go={go} setPopout={setPopout} changeThemeOption={changeThemeOption} />
                 <Friends id='friends' go={go} />
                 <Profile id='profile' go={go} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUserID={currentUserID} user={panelProfileUser} />
             </View>

@@ -50,12 +50,8 @@ import platformSwitch from './_platformSwitch'
 
 // TODO: улучшить вид кнопки "Мой профиль" + показывать средний рейтинг справа от кнопки "Мой профиль"
 
-function Home({ id, go, isAppLoaded, setPopout, changeThemeOption }) {
+function Home({ id, go, setPopout, changeThemeOption }) {
 	const [currentTab, setCurrentTab] = useState('profile_selection')
-
-	if (!isAppLoaded) {
-		return <Panel id={id} />
-	}
 
 	let view = null
 

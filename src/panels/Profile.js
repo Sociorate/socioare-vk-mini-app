@@ -197,8 +197,7 @@ function RatingCardBar({ emoji, emojiAlt, biggestCount, color, count }) {
 				<div style={{
 					height: '18px',
 					width: '100%',
-					backgroundColor: '#f1f1f1',
-					color: 'white',
+					backgroundColor: (document.body.attributes.getNamedItem('scheme').value == 'space_gray' ? '#232324' : '#f9f9f9'),
 				}}>
 					<div style={{
 						height: '100%',
@@ -282,11 +281,11 @@ function RatingCard({ rating }) {
 				<Card size='l'>
 					<Card size='l' mode='shadow'>
 						<Div>
-							<RatingCardBar emoji={LoveEmoji} emojiAlt='5' biggestCount={biggestCount} color='#4CAF50' count={ratingSum[4]} />
-							<RatingCardBar emoji={LikeEmoji} emojiAlt='4' biggestCount={biggestCount} color='#2196F3' count={ratingSum[3]} />
-							<RatingCardBar emoji={NeutralEmoji} emojiAlt='3' biggestCount={biggestCount} color='#00bcd4' count={ratingSum[2]} />
-							<RatingCardBar emoji={DislikeEmoji} emojiAlt='2' biggestCount={biggestCount} color='#ff9800' count={ratingSum[1]} />
-							<RatingCardBar emoji={HateEmoji} emojiAlt='1' biggestCount={biggestCount} color='#f44336' count={ratingSum[0]} />
+							<RatingCardBar emoji={LoveEmoji} emojiAlt='5' biggestCount={biggestCount} color='#FFC107' count={ratingSum[4]} />
+							<RatingCardBar emoji={LikeEmoji} emojiAlt='4' biggestCount={biggestCount} color='#4CD964' count={ratingSum[3]} />
+							<RatingCardBar emoji={NeutralEmoji} emojiAlt='3' biggestCount={biggestCount} color='#63B9BA' count={ratingSum[2]} />
+							<RatingCardBar emoji={DislikeEmoji} emojiAlt='2' biggestCount={biggestCount} color='#F4E7C3' count={ratingSum[1]} />
+							<RatingCardBar emoji={HateEmoji} emojiAlt='1' biggestCount={biggestCount} color='#E64646' count={ratingSum[0]} />
 						</Div>
 					</Card>
 					{averageRatingEmoji ? <img style={{

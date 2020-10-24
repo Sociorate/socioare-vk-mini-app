@@ -33,7 +33,7 @@ import ReCAPTCHA from "react-google-recaptcha"
 window.recaptchaOptions = { useRecaptchaNet: true }
 
 // TODO: поле с id панели которая должна открыться после слайдшоу 
-// TODO: роутинг
+// TODO: роутинг (можно только чтоб кнопка назад работала на андройдах (и свайп на ios по совместительству))
 
 var reCaptchaCallback = null
 
@@ -52,7 +52,7 @@ function App() {
 
     const [autoTheme, setAutoTheme] = useState('light')
     const [themeOption, setThemeOption] = useState('auto')
-    const [themeLoaded, setThemeLoaded] = useState(false)
+    const [isThemeLoaded, setIsThemeLoaded] = useState(false)
 
     const [isSlideshowDone, setIsSlideshowDone] = useState(null)
 
@@ -160,7 +160,7 @@ function App() {
                 console.error(err)
             }
             setThemeOption(String(storedThemeOption))
-            setThemeLoaded(true)
+            setIsThemeLoaded(true)
 
             let storedIsSlideshowDone = null
 
@@ -230,7 +230,7 @@ function App() {
         fetchUserFromLocationHash()
     }, [vkWebAppInitDone, go])
 
-    const isAppLoaded = reCaptchaLoaded && vkWebAppInitDone && themeLoaded && currentUserID && isSlideshowDone != null
+    const isAppLoaded = reCaptchaLoaded && vkWebAppInitDone && isThemeLoaded && currentUserID && isSlideshowDone != null
 
     return (
         <ReCAPTCHA

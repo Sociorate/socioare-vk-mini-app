@@ -30,6 +30,7 @@ function Friends({ id, go }) {
     useEffect(() => {
         const fetchFriends = async () => {
             let friend = null
+            let isErrNotSupportedPlatform = false
 
             try {
                 friend = (await bridge.send('VKWebAppGetFriends', { multi: false })).users[0]
@@ -39,12 +40,18 @@ function Friends({ id, go }) {
                         go('home')
                         return
                     case 6:
+                        isErrNotSupportedPlatform = true
                         break
                     default:
                         console.error(err)
                         showErrorSnackbar(setSnackbar, 'Не удалось открыть список друзей')
                         return
                 }
+            }
+
+            if (friend == null && !isErrNotSupportedPlatform) {
+                go('home')
+                return
             }
 
             if (friend != null) {

@@ -16,7 +16,7 @@ import {
 	Link,
 	Footer,
 	Card,
-	Text,
+	Subhead,
 	PanelHeaderBack,
 	PanelHeaderContent,
 	PanelSpinner,
@@ -45,6 +45,8 @@ import {
 	showSuccessSnackbar,
 } from './_showSnackbar'
 
+import createAverageRating from './_createAverageRating'
+
 import LoveEmoji from 'openmoji/color/svg/1F929.svg'
 import LikeEmoji from 'openmoji/color/svg/1F60A.svg'
 import NeutralEmoji from 'openmoji/color/svg/1F610.svg'
@@ -52,8 +54,7 @@ import DislikeEmoji from 'openmoji/color/svg/1F627.svg'
 import HateEmoji from 'openmoji/color/svg/1F621.svg'
 
 // TODO: рекламный баннер внизу экрана профиля
-// TODO: скачивание qr кода
-// TODO: просмотра статистики за последние 7 дней
+// TODO: просмотр статистики за последние 7 дней
 
 function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
 	const [snackbar, setSnackbar] = useState(null)
@@ -178,24 +179,24 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 	)
 }
 
-function RatingCardBar({ emoji, emojiAlt, biggestCount, color, count }) {
+function RatingCardBar({ imageSrc, imageAlt, biggestCount, color, count }) {
 	return (
 		<div style={{
-			height: '27px',
+			height: '28px',
 			display: 'flex',
 		}}>
 			<img style={{
-				height: '27px',
+				height: '28px',
 				flex: '10%',
-			}} src={emoji} alt={emojiAlt} />
+			}} src={imageSrc} alt={imageAlt} />
 
 			<div style={{
-				height: '18px',
-				paddingTop: '4.5px',
+				height: '20px',
+				paddingTop: '4px',
 				flex: '70%',
 			}}>
 				<div style={{
-					height: '18px',
+					height: '20px',
 					width: '100%',
 					backgroundColor: (document.body.attributes.getNamedItem('scheme').value == 'space_gray' ? '#232324' : '#f9f9f9'),
 				}}>
@@ -207,12 +208,15 @@ function RatingCardBar({ emoji, emojiAlt, biggestCount, color, count }) {
 				</div>
 			</div>
 
-			<Text style={{
-				height: '18px',
-				paddingTop: '4.5px',
-				flex: '10%',
-				textAlign: 'right',
-			}}>{count}</Text>
+			<Subhead
+				weight="regular"
+				style={{
+					height: '19px',
+					paddingTop: '4.5px',
+					flex: '10%',
+					textAlign: 'right',
+				}}
+			>{count}</Subhead>
 		</div>
 	)
 }
@@ -233,11 +237,9 @@ function RatingCard({ rating }) {
 		let ratingSum = [0, 0, 0, 0, 0]
 
 		for (let i = 0; i < rating.length; i++) {
-			ratingSum[0] += rating[i][0]
-			ratingSum[1] += rating[i][1]
-			ratingSum[2] += rating[i][2]
-			ratingSum[3] += rating[i][3]
-			ratingSum[4] += rating[i][4]
+			for (let k = 0; k < 5; k++) {
+				ratingSum[k] += rating[i][k]
+			}
 		}
 
 		let biggestCount = 0
@@ -248,30 +250,7 @@ function RatingCard({ rating }) {
 			biggestCount = Math.max(biggestCount, ratingSum[i]);
 		}
 
-		let averageRatingEmoji = null
-		let averageRating = 0
-
-		if (allCount >= 3) {
-			let averageRating = (5 * ratingSum[4] + 4 * ratingSum[3] + 3 * ratingSum[2] + 2 * ratingSum[1] + ratingSum[0]) / allCount
-
-			// Hate:    1.0 - 1.8
-			// Dislike: 1.8 - 2.6
-			// Neutral: 2.6 - 3.4
-			// Like:    3.4 - 4.2
-			// Love:    4.2 - 5.0
-
-			if (averageRating > 1.0 && averageRating < 1.8) {
-				averageRatingEmoji = HateEmoji
-			} else if (averageRating > 1.8 && averageRating < 2.6) {
-				averageRatingEmoji = DislikeEmoji
-			} else if (averageRating > 2.6 && averageRating < 3.4) {
-				averageRatingEmoji = NeutralEmoji
-			} else if (averageRating > 3.4 && averageRating < 4.2) {
-				averageRatingEmoji = LikeEmoji
-			} else if (averageRating > 4.2 && averageRating < 5.0) {
-				averageRatingEmoji = LoveEmoji
-			}
-		}
+		let [averageRating, averageRatingEmoji] = createAverageRating(ratingSum, allCount)
 
 		setRatingCard(<Div>
 			<Group
@@ -281,11 +260,11 @@ function RatingCard({ rating }) {
 				<Card size='l'>
 					<Card size='l' mode='shadow'>
 						<Div>
-							<RatingCardBar emoji={LoveEmoji} emojiAlt='5' biggestCount={biggestCount} color='#FFC107' count={ratingSum[4]} />
-							<RatingCardBar emoji={LikeEmoji} emojiAlt='4' biggestCount={biggestCount} color='#4CD964' count={ratingSum[3]} />
-							<RatingCardBar emoji={NeutralEmoji} emojiAlt='3' biggestCount={biggestCount} color='#63B9BA' count={ratingSum[2]} />
-							<RatingCardBar emoji={DislikeEmoji} emojiAlt='2' biggestCount={biggestCount} color='#F4E7C3' count={ratingSum[1]} />
-							<RatingCardBar emoji={HateEmoji} emojiAlt='1' biggestCount={biggestCount} color='#E64646' count={ratingSum[0]} />
+							<RatingCardBar imageSrc={LoveEmoji} imageAlt='5' biggestCount={biggestCount} color='#FFC107' count={ratingSum[4]} />
+							<RatingCardBar imageSrc={LikeEmoji} imageAlt='4' biggestCount={biggestCount} color='#4CD964' count={ratingSum[3]} />
+							<RatingCardBar imageSrc={NeutralEmoji} imageAlt='3' biggestCount={biggestCount} color='#63B9BA' count={ratingSum[2]} />
+							<RatingCardBar imageSrc={DislikeEmoji} imageAlt='2' biggestCount={biggestCount} color='#F4E7C3' count={ratingSum[1]} />
+							<RatingCardBar imageSrc={HateEmoji} imageAlt='1' biggestCount={biggestCount} color='#E64646' count={ratingSum[0]} />
 						</Div>
 					</Card>
 					{averageRatingEmoji ? <img style={{

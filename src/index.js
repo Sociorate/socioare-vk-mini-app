@@ -32,7 +32,6 @@ import ReCAPTCHA from "react-google-recaptcha"
 
 window.recaptchaOptions = { useRecaptchaNet: true }
 
-// TODO: поле с id панели которая должна открыться после слайдшоу 
 // TODO: роутинг (можно только чтоб кнопка назад работала на андройдах (и свайп на ios по совместительству))
 
 var reCaptchaCallback = null
@@ -268,7 +267,7 @@ function App() {
                         console.error(err)
                     }
                 }} />
-                <Home id='home' go={go} setPopout={setPopout} changeThemeOption={changeThemeOption} />
+                <Home id='home' go={go} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUserID={currentUserID} />
                 <Friends id='friends' go={go} />
                 <Profile id='profile' go={go} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUserID={currentUserID} user={panelProfileUser} />
             </View>

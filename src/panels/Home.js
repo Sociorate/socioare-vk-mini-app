@@ -40,24 +40,28 @@ import {
 import bridge from '@vkontakte/vk-bridge'
 
 import {
+	getRating,
+} from '../sociorate-api'
+
+import {
 	showErrorSnackbar,
 	showSuccessSnackbar,
 } from './_showSnackbar'
+
+import createAverageRating from './_createAverageRating'
 
 import UsersList from './_UsersList'
 
 import platformSwitch from './_platformSwitch'
 
-// TODO: улучшить вид кнопки "Мой профиль" + показывать средний рейтинг справа от кнопки "Мой профиль"
-
-function Home({ id, go, setPopout, changeThemeOption }) {
+function Home({ id, go, setPopout, changeThemeOption, currentUserID }) {
 	const [currentTab, setCurrentTab] = useState('profile_selection')
 
 	let view = null
 
 	switch (currentTab) {
 		case 'profile_selection':
-			view = <ProfileSelection go={go} />
+			view = <ProfileSelection go={go} currentUserID={currentUserID} />
 			break
 		case 'other':
 			view = <Other setPopout={setPopout} changeThemeOption={changeThemeOption} />
@@ -105,12 +109,51 @@ function LastViewedProfilesPlaceholder() {
 	)
 }
 
-function ProfileSelection({ go }) {
+function ProfileSelection({ go, currentUserID }) {
 	const [isFetching, setIsFetching] = useState(false)
 
-	const [snackbar, setSnackbar] = useState(null)
+	const [currentUserAverageRatingEmoji, setCurrentUserAverageRatingEmoji] = useState(null)
 	const [userIDInput, setUserIDInput] = useState('')
 	const [lastProfilesView, setLastProfilesView] = useState(null)
+
+	const [snackbar, setSnackbar] = useState(null)
+
+	const fetchCurrentUserRating = useCallback(async () => {
+		let rating = null
+		try {
+			rating = (await getRating(currentUserID)).rating
+		} catch (err) {
+			console.error(err)
+		}
+
+		if (rating == null) {
+			return
+		}
+
+		let ratingSum = [0, 0, 0, 0, 0]
+
+		for (let i = 0; i < rating.length; i++) {
+			for (let k = 0; k < 5; k++) {
+				ratingSum[k] += rating[i][k]
+			}
+		}
+
+		let allCount = 0
+
+		for (let i = 0; i < ratingSum.length; i++) {
+			allCount += ratingSum[i]
+		}
+
+		let [averageRating, averageRatingEmoji] = createAverageRating(ratingSum, allCount)
+
+		if (averageRatingEmoji != null) {
+			setCurrentUserAverageRatingEmoji(<img style={{
+				height: '28px',
+				display: 'block',
+				margin: 'auto',
+			}} src={averageRatingEmoji} alt={averageRating} />)
+		}
+	}, [])
 
 	const fetchLastViewedProfiles = useCallback(async () => {
 		setLastProfilesView(<PanelSpinner />)
@@ -150,8 +193,9 @@ function ProfileSelection({ go }) {
 	}, [go])
 
 	useEffect(() => {
+		fetchCurrentUserRating()
 		fetchLastViewedProfiles()
-	}, [fetchLastViewedProfiles])
+	}, [fetchCurrentUserRating, fetchLastViewedProfiles])
 
 	const loadUser = useCallback(async (stringWithUserID) => {
 		try {
@@ -185,13 +229,22 @@ function ProfileSelection({ go }) {
 		<PullToRefresh
 			onRefresh={async () => {
 				setIsFetching(true)
-				await fetchLastViewedProfiles()
-				setIsFetching(false)
+
+				let i = 0
+				const done = () => {
+					i++
+					if (i == 2) {
+						setIsFetching(false)
+					}
+				}
+
+				fetchCurrentUserRating().then(() => { done() })
+				fetchLastViewedProfiles().then(() => { done() })
 			}}
 			isFetching={isFetching}
 		>
 			<Group>
-				<SimpleCell before={<Icon28Profile />} onClick={async () => {
+				<SimpleCell before={<Icon28Profile />} after={currentUserAverageRatingEmoji} onClick={async () => {
 					try {
 						let user = await bridge.send('VKWebAppGetUserInfo')
 
@@ -280,12 +333,12 @@ function Other({ setPopout, changeThemeOption }) {
 					} catch (err) {
 						if (err.error_data.error_code !== 4) {
 							console.error(err)
-							showErrorSnackbar(setSnackbar, 'Не удалось добавить приложение в избранные')
+							showErrorSnackbar(setSnackbar, 'Не удалось добавить приложение в избранное')
 						}
 						return
 					}
-					showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate в избранные!')
-				}}>Добавить в избранные</SimpleCell>
+					showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate в избранное!')
+				}}>Добавить в избранное</SimpleCell>
 			)}
 
 			{platformSwitch(['mobile_web', 'desktop_web', 'mobile_android_messenger', 'mobile_iphone_messenger'],

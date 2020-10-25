@@ -68,7 +68,7 @@ function postRating(userid, rate, reCaptchaToken) {
 
 function getRating(userid) {
     return newApiRequest('/get_rating', JSON.stringify({
-        userid: userid,
+        userid: Number(userid),
     }))
 }
 

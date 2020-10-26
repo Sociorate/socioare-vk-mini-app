@@ -41,23 +41,17 @@ function Slideshow({ id, doneCallback }) {
                     }}
                 >
                     <Placeholder
-                        icon={<Icon56FavoriteOutline style={{
-                            color: 'var(--accent)',
-                        }} />}
+                        icon={<Icon56FavoriteOutline />}
                         header="Добро пожаловать!"
-                        action={<Button size="xl" mode="tertiary" onClick={() => { setSlideIndex(1) }}>Ммм?</Button>}
-                    >Sociorate - уникальное приложение человеческого рейтинга</Placeholder>
+                        action={<Button size="xl" mode="tertiary" onClick={() => { setSlideIndex(1) }}>Ух ты!</Button>}
+                    >Sociorate - уникальное приложение человеческого рейтинга.</Placeholder>
                     <Placeholder
-                        icon={<Icon56LikeOutline style={{
-                            color: 'var(--accent)',
-                        }} />}
+                        icon={<Icon56LikeOutline />}
                         header="Оценивайте людей"
                         action={<Button size="xl" mode="tertiary" onClick={() => { setSlideIndex(2) }}>Интересно!</Button>}
                     >После каждой встречи</Placeholder>
                     <Placeholder
-                        icon={<Icon56UsersOutline style={{
-                            color: 'var(--accent)',
-                        }} />}
+                        icon={<Icon56UsersOutline />}
                         header="Узнавайте рейтинг любого человека"
                         action={<Button size="xl" mode="tertiary" onClick={() => { doneCallback() }}>Начать!</Button>}
                     >И следите за своим ;)</Placeholder>

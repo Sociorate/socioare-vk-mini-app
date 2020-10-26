@@ -54,6 +54,8 @@ import UsersList from './_UsersList'
 
 import platformSwitch from './_platformSwitch'
 
+// TODO: сделать вкладки сменяемыми свайпами
+
 function Home({ id, go, setPopout, changeThemeOption, currentUserID }) {
 	const [currentTab, setCurrentTab] = useState('profile_selection')
 
@@ -119,39 +121,34 @@ function ProfileSelection({ go, currentUserID }) {
 	const [snackbar, setSnackbar] = useState(null)
 
 	const fetchCurrentUserRating = useCallback(async () => {
-		let rating = null
 		try {
-			rating = (await getRating(currentUserID)).rating
+			let rating = (await getRating(currentUserID)).rating
+
+			let ratingSum = [0, 0, 0, 0, 0]
+
+			for (let i = 0; i < rating.length; i++) {
+				for (let k = 0; k < 5; k++) {
+					ratingSum[k] += rating[i][k]
+				}
+			}
+
+			let allCount = 0
+
+			for (let i = 0; i < ratingSum.length; i++) {
+				allCount += ratingSum[i]
+			}
+
+			let [averageRating, averageRatingEmoji] = createAverageRating(ratingSum, allCount)
+
+			if (averageRatingEmoji != null) {
+				setCurrentUserAverageRatingEmoji(<img style={{
+					height: '28px',
+					display: 'block',
+					margin: 'auto',
+				}} src={averageRatingEmoji} alt={averageRating} />)
+			}
 		} catch (err) {
 			console.error(err)
-		}
-
-		if (rating == null) {
-			return
-		}
-
-		let ratingSum = [0, 0, 0, 0, 0]
-
-		for (let i = 0; i < rating.length; i++) {
-			for (let k = 0; k < 5; k++) {
-				ratingSum[k] += rating[i][k]
-			}
-		}
-
-		let allCount = 0
-
-		for (let i = 0; i < ratingSum.length; i++) {
-			allCount += ratingSum[i]
-		}
-
-		let [averageRating, averageRatingEmoji] = createAverageRating(ratingSum, allCount)
-
-		if (averageRatingEmoji != null) {
-			setCurrentUserAverageRatingEmoji(<img style={{
-				height: '28px',
-				display: 'block',
-				margin: 'auto',
-			}} src={averageRatingEmoji} alt={averageRating} />)
 		}
 	}, [])
 

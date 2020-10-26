@@ -55,6 +55,7 @@ import HateEmoji from 'openmoji/color/svg/1F621.svg'
 
 // TODO: рекламный баннер внизу экрана профиля
 // TODO: просмотр статистики за последние 7 дней
+// TODO: анимация на появление кнопок для оценивания
 
 function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
 	const [snackbar, setSnackbar] = useState(null)
@@ -285,6 +286,8 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 	const [rating, setRating] = useState(null)
 
 	const fetchRating = useCallback(async () => {
+		setRating(null)
+
 		let data = null
 		try {
 			data = await getRating(user.id)
@@ -367,9 +370,13 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 									onClose={() => { setPopout(null) }}
 								>
 									<img
-										style={{ width: '100%' }}
+										id={`qr_code_${user.id}`}
 										alt={targetstr}
 										src={svgdataurl}
+										style={{
+											width: '100%',
+											backgroundColor: '#FFFFFF',
+										}}
 									/>
 								</Alert>
 							)

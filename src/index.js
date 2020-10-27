@@ -154,7 +154,7 @@ function App() {
         const fetchThingsFromStorage = async () => {
             let storedThemeOption = null
             try {
-                storedThemeOption = (await bridge.send('VKWebAppStorageGet', { keys: ['theme_option', 'is_slideshow_done'] })).keys[0].value
+                storedThemeOption = (await bridge.send('VKWebAppStorageGet', { keys: ['theme_option'] })).keys[0].value
             } catch (err) {
                 console.error(err)
             }

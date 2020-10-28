@@ -109,7 +109,7 @@ function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
 	)
 }
 
-function UserProfileRichCell({ setSnackbar, user }) {
+function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 	return (
 		<RichCell
 			disabled
@@ -399,7 +399,7 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 			}}
 			isFetching={isFetching}
 		>
-			<UserProfileRichCell setSnackbar={setSnackbar} user={user} />
+			<UserProfileRichCell setPopout={setPopout} setSnackbar={setSnackbar} user={user} />
 
 			{currentUserID !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} fetchRating={fetchRating} /> : null}
 

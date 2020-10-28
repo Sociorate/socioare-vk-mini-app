@@ -109,12 +109,92 @@ function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
 	)
 }
 
+function UserProfileRichCell({ setSnackbar, user }) {
+	return (
+		<RichCell
+			disabled
+			before={<Avatar size={80} src={user.photo_200} />}
+			actions={
+				<div style={{ display: 'flex' }}>
+					<Button mode='tertiary' stretched
+						href={`https://vk.com/${user.screen_name ? user.screen_name : `id${user.id}`}`}
+						target='_blank'
+					><Icon24Link /></Button>
+					<Button mode='tertiary' stretched onClick={async () => {
+						try {
+							await bridge.send('VKWebAppShare', { link: `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}` });
+						} catch (err) {
+							if (err.error_data.error_code !== 4) {
+								console.error(err)
+								showErrorSnackbar(setSnackbar, 'Не удалось открыть диалог Share')
+							}
+						}
+					}}><Icon24ShareOutline /></Button>
+					<Button mode='tertiary' stretched onClick={() => {
+						const targetstr = `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}`
+
+						let svgstr = vkQr.createQR(targetstr, {
+							qrSize: 457,
+							isShowLogo: true,
+							ecc: 2,
+						})
+						let svgdataurl = `data:image/svg+xml,${encodeURIComponent(svgstr)}`
+
+						setPopout(
+							<Alert
+								actions={[{
+									title: 'Скопировать',
+									autoclose: true,
+									action: async () => {
+										try {
+											await bridge.send("VKWebAppCopyText", { "text": targetstr });
+										} catch (err) {
+											if (err.error_data.error_code !== 4) {
+												console.error(err)
+												showErrorSnackbar(setSnackbar, 'Не удалось скопировать ссылку')
+												return
+											}
+										}
+										showSuccessSnackbar(setSnackbar, 'Ссылка скопирована!')
+									}
+								}, {
+									title: 'Отмена',
+									autoclose: true,
+									mode: 'cancel'
+								}]}
+								onClose={() => { setPopout(null) }}
+							>
+								<img
+									id={`qr_code_${user.id}`}
+									alt={targetstr}
+									src={svgdataurl}
+									style={{
+										width: '100%',
+										backgroundColor: '#FFFFFF',
+									}}
+								/>
+							</Alert>
+						)
+					}}><Icon24Qr /></Button>
+				</div>
+			}
+		>
+			<Title level="2" weight="regular">{`${user.first_name} ${user.last_name}`}</Title>
+		</RichCell>
+	)
+}
+
 function RateButton({ imageSrc, code, chooseRate }) {
 	return (
 		<Button
 			style={{
+				flex: '100%',
 				position: 'relative',
-				width: '63px',
+				maxWidth: '64px',
+				maxHeight: '64px',
+				padding: 0,
+				margin: 0,
+				border: 0,
 			}}
 			mode='tertiary'
 			onClick={() => {
@@ -164,9 +244,10 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 		<React.Fragment>
 			<Div style={{
 				display: 'flex',
+				flexDirection: 'row',
 				justifyContent: 'center',
-				height: '63px',
-				marginTop: '10px'
+				height: '64px',
+				marginTop: '8px',
 			}}>
 				<RateButton imageSrc={HateEmoji} code='1' chooseRate={chooseRate} />
 				<RateButton imageSrc={DislikeEmoji} code='2' chooseRate={chooseRate} />
@@ -175,7 +256,9 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 				<RateButton imageSrc={LoveEmoji} code='5' chooseRate={chooseRate} />
 			</Div>
 
-			<Footer style={{ marginTop: '12px' }}>Оценивайте людей после каждой встречи нажимая на эмодзи выше</Footer>
+			<Footer style={{
+				marginTop: '16px',
+			}}>Оценивайте людей после каждой встречи нажимая на эмодзи выше</Footer>
 		</React.Fragment>
 	)
 }
@@ -269,7 +352,7 @@ function RatingCard({ rating }) {
 						</Div>
 					</Card>
 					{averageRatingEmoji ? <img style={{
-						height: '108px',
+						height: '112px',
 						display: 'block',
 						margin: 'auto',
 					}} src={averageRatingEmoji} alt={averageRating} /> : null}
@@ -316,76 +399,7 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 			}}
 			isFetching={isFetching}
 		>
-			<RichCell
-				disabled
-				before={<Avatar size={80} src={user.photo_200} />}
-				actions={
-					<div style={{ display: 'flex' }}>
-						<Button mode='tertiary' stretched
-							href={`https://vk.com/${user.screen_name ? user.screen_name : `id${user.id}`}`}
-							target='_blank'
-						><Icon24Link /></Button>
-						<Button mode='tertiary' stretched onClick={async () => {
-							try {
-								await bridge.send('VKWebAppShare', { link: `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}` });
-							} catch (err) {
-								if (err.error_data.error_code !== 4) {
-									console.error(err)
-									showErrorSnackbar(setSnackbar, 'Не удалось открыть диалог Share')
-								}
-							}
-						}}><Icon24ShareOutline /></Button>
-						<Button mode='tertiary' stretched onClick={() => {
-							const targetstr = `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}`
-
-							let svgstr = vkQr.createQR(targetstr, {
-								qrSize: 457,
-								isShowLogo: true,
-								ecc: 2,
-							})
-							let svgdataurl = `data:image/svg+xml,${encodeURIComponent(svgstr)}`
-
-							setPopout(
-								<Alert
-									actions={[{
-										title: 'Скопировать',
-										autoclose: true,
-										action: async () => {
-											try {
-												await bridge.send("VKWebAppCopyText", { "text": targetstr });
-											} catch (err) {
-												if (err.error_data.error_code !== 4) {
-													console.error(err)
-													showErrorSnackbar(setSnackbar, 'Не удалось скопировать ссылку')
-													return
-												}
-											}
-											showSuccessSnackbar(setSnackbar, 'Ссылка скопирована!')
-										}
-									}, {
-										title: 'Отмена',
-										autoclose: true,
-										mode: 'cancel'
-									}]}
-									onClose={() => { setPopout(null) }}
-								>
-									<img
-										id={`qr_code_${user.id}`}
-										alt={targetstr}
-										src={svgdataurl}
-										style={{
-											width: '100%',
-											backgroundColor: '#FFFFFF',
-										}}
-									/>
-								</Alert>
-							)
-						}}><Icon24Qr /></Button>
-					</div>
-				}
-			>
-				<Title level="2" weight="regular">{`${user.first_name} ${user.last_name}`}</Title>
-			</RichCell>
+			<UserProfileRichCell setSnackbar={setSnackbar} user={user} />
 
 			{currentUserID !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} fetchRating={fetchRating} /> : null}
 

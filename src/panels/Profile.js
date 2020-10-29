@@ -54,7 +54,6 @@ import NeutralEmoji from 'openmoji/color/svg/1F610.svg'
 import DislikeEmoji from 'openmoji/color/svg/1F627.svg'
 import HateEmoji from 'openmoji/color/svg/1F621.svg'
 
-// TODO: рекламный баннер внизу экрана профиля
 // TODO: просмотр статистики за последние 7 дней
 // TODO: анимация на появление кнопок для оценивания
 

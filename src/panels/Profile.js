@@ -23,6 +23,7 @@ import {
 	Alert,
 	Title,
 	PullToRefresh,
+	PromoBanner,
 } from '@vkontakte/vkui'
 
 import {
@@ -169,8 +170,11 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 									alt={targetstr}
 									src={svgdataurl}
 									style={{
-										width: '100%',
+										width: '96%',
+										padding: '2%',
 										backgroundColor: '#FFFFFF',
+										border: '2% solid #FFFFFF',
+										borderRadius: '12px',
 									}}
 								/>
 							</Alert>
@@ -386,14 +390,29 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 		setRating(data.rating)
 	}, [setSnackbar, user])
 
+	const [promoBanner, setPromoBanner] = useState(null)
+
+	const fetchAds = useCallback(async () => {
+		try {
+			let adsData = await bridge.send("VKWebAppGetAds", {})
+			setPromoBanner(<PromoBanner bannerData={adsData} onClose={() => {
+				setPromoBanner(null)
+			}} />)
+		} catch (err) {
+			console.error(err)
+		}
+	}, [])
+
 	useEffect(() => {
 		fetchRating()
+		fetchAds()
 	}, [fetchRating])
 
 	return (
 		<PullToRefresh
 			onRefresh={async () => {
 				setIsFetching(true)
+				fetchAds()
 				await fetchRating()
 				setIsFetching(false)
 			}}
@@ -402,6 +421,8 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 			<UserProfileRichCell setPopout={setPopout} setSnackbar={setSnackbar} user={user} />
 
 			{currentUserID !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} fetchRating={fetchRating} /> : null}
+
+			{promoBanner}
 
 			{rating != null ? <RatingCard rating={rating} /> : <PanelSpinner />}
 

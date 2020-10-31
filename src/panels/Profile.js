@@ -54,7 +54,6 @@ import NeutralEmoji from 'openmoji/color/svg/1F610.svg'
 import DislikeEmoji from 'openmoji/color/svg/1F627.svg'
 import HateEmoji from 'openmoji/color/svg/1F621.svg'
 
-// TODO: просмотр статистики за последние 7 дней
 // TODO: анимация на появление кнопок для оценивания
 
 function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
@@ -334,7 +333,7 @@ function RatingCard({ ratingCounts }) {
 		setRatingCard(<Div>
 			<Group
 				separator='hide'
-				header={<Header mode='secondary'>Рейтинг за последние 7 дней</Header>}
+				header={<Header mode='secondary'>Рейтинг</Header>}
 			>
 				<Card size='l'>
 					<Card size='l' mode='shadow'>

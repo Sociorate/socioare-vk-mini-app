@@ -225,7 +225,7 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 					await postRating(userid, rate, token)
 				} catch (err) {
 					if (err.code === 98765) {
-						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно 9 раз в 24 часа")
+						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно 9 раз за 24 часа")
 					} else {
 						console.error(err)
 						showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')

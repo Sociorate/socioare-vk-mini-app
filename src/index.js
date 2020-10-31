@@ -37,7 +37,7 @@ window.recaptchaOptions = { useRecaptchaNet: true }
 var reCaptchaCallback = null
 
 function App() {
-    const [vkWebAppInitDone, setVKWebAppInitDone] = useState(false)
+    const [isVKWebAppInitDone, setIsVKWebAppInitDone] = useState(false)
 
     const [activePanel, setActivePanel] = useState('home')
     const [popout, setPopout] = useState(null)
@@ -47,7 +47,7 @@ function App() {
 
     const reCaptchaRef = useRef()
     const [reCaptchaTheme, setReCaptchaTheme] = useState('light')
-    const [reCaptchaLoaded, setReCaptchaLoaded] = useState(false)
+    const [isReCaptchaLoaded, setIsReCaptchaLoaded] = useState(false)
 
     const [autoTheme, setAutoTheme] = useState('light')
     const [themeOption, setThemeOption] = useState('auto')
@@ -71,7 +71,7 @@ function App() {
                 console.error(err)
             }
 
-            setVKWebAppInitDone(true)
+            setIsVKWebAppInitDone(true)
         }
         vkWebAppInit()
 
@@ -185,7 +185,7 @@ function App() {
             }
         }
         fetchCurrentUserID()
-    }, [vkWebAppInitDone])
+    }, [isVKWebAppInitDone])
 
     const go = useCallback((panelid, user) => {
         if (user) {
@@ -196,7 +196,7 @@ function App() {
     }, [])
 
     useEffect(() => {
-        if (!vkWebAppInitDone) {
+        if (!isVKWebAppInitDone) {
             return
         }
 
@@ -227,37 +227,40 @@ function App() {
             }
         }
         fetchUserFromLocationHash()
-    }, [vkWebAppInitDone, go])
+    }, [isVKWebAppInitDone, go])
 
-    const isAppLoaded = reCaptchaLoaded && vkWebAppInitDone && isThemeLoaded && currentUserID && isSlideshowDone != null
+    const isAppLoaded = isReCaptchaLoaded && isVKWebAppInitDone && isThemeLoaded && currentUserID != null && isSlideshowDone != null
 
     return (
-        <ReCAPTCHA
-            ref={reCaptchaRef}
-            theme={reCaptchaTheme}
-            size="invisible"
-            sitekey="6LcWr9gZAAAAACPguyvAWhIkyvQG8Doml7zTPxX2"
-            asyncScriptOnLoad={() => {
-                setReCaptchaLoaded(true)
-            }}
-            onChange={(value) => {
-                if (reCaptchaCallback != null) {
-                    reCaptchaCallback(value, null, false)
-                }
-            }}
-            onErrored={(error) => {
-                if (reCaptchaCallback != null) {
-                    reCaptchaCallback(null, error, false)
-                }
-            }}
-            onExpired={() => {
-                if (reCaptchaCallback != null) {
-                    reCaptchaCallback(null, null, true)
-                }
-            }}
-        >
+        <React.Fragment>
+            <ReCAPTCHA
+                ref={reCaptchaRef}
+                theme={reCaptchaTheme}
+                size="invisible"
+                sitekey="6LcWr9gZAAAAACPguyvAWhIkyvQG8Doml7zTPxX2"
+                asyncScriptOnLoad={() => {
+                    setIsReCaptchaLoaded(true)
+                }}
+                onChange={(value) => {
+                    if (reCaptchaCallback != null) {
+                        reCaptchaCallback(value, null, false)
+                    }
+                }}
+                onErrored={(error) => {
+                    if (reCaptchaCallback != null) {
+                        reCaptchaCallback(null, error, false)
+                    }
+                }}
+                onExpired={() => {
+                    if (reCaptchaCallback != null) {
+                        reCaptchaCallback(null, null, true)
+                    }
+                }}
+            />
+
             <View activePanel={isAppLoaded ? (isSlideshowDone ? activePanel : 'slideshow') : 'blank'} popout={isAppLoaded ? popout : <ScreenSpinner />}>
                 <Panel id='blank' />
+
                 <Slideshow id='slideshow' go={go} doneCallback={async () => {
                     setIsSlideshowDone(true)
 
@@ -267,11 +270,12 @@ function App() {
                         console.error(err)
                     }
                 }} />
+
                 <Home id='home' go={go} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUserID={currentUserID} />
                 <Friends id='friends' go={go} />
                 <Profile id='profile' go={go} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUserID={currentUserID} user={panelProfileUser} />
             </View>
-        </ReCAPTCHA>
+        </React.Fragment>
     )
 }
 

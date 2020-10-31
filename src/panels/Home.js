@@ -266,12 +266,12 @@ function ProfileSelection({ go, currentUserID }) {
 				<SimpleCell before={<Icon28UserOutline />} onClick={() => { go('friends') }}>Выбрать из друзей</SimpleCell>
 
 				<FormLayout>
-					<Input top='Открыть по @ID или ссылке' value={userIDInput} onChange={(event) => {
+					<Input top='По @ID или ссылке ВК/Sociorate' value={userIDInput} onChange={(event) => {
 						setUserIDInput(event.target.value)
 					}} type='text' placeholder='Введите ID или ссылку' />
 					<Button size='xl' onClick={async () => {
 						if (userIDInput === '') {
-							showErrorSnackbar(setSnackbar, 'Введите ID профиля ВКонтакте или ссылку.')
+							showErrorSnackbar(setSnackbar, 'Введите ID или ссылку ВК/Sociorate.')
 							return
 						}
 

@@ -226,7 +226,7 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 					await postRating(userid, rate, token)
 				} catch (err) {
 					if (err.code === 98765) {
-						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно раз в минуту")
+						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно 9 раз в 24 часа")
 					} else {
 						console.error(err)
 						showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
@@ -366,7 +366,7 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 	const fetchRating = useCallback(async () => {
 		let prevRatingCounts = ratingCounts
 
-		setRating(null)
+		setRatingCounts(null)
 
 		let ratingCounts = null
 		try {

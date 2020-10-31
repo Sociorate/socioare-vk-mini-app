@@ -122,23 +122,9 @@ function ProfileSelection({ go, currentUserID }) {
 
 	const fetchCurrentUserRating = useCallback(async () => {
 		try {
-			let rating = (await getRating(currentUserID)).rating
+			let ratingCounts = (await getRating(currentUserID)).rating_counts
 
-			let ratingSum = [0, 0, 0, 0, 0]
-
-			for (let i = 0; i < rating.length; i++) {
-				for (let k = 0; k < 5; k++) {
-					ratingSum[k] += rating[i][k]
-				}
-			}
-
-			let allCount = 0
-
-			for (let i = 0; i < ratingSum.length; i++) {
-				allCount += ratingSum[i]
-			}
-
-			let [averageRating, averageRatingEmoji] = createAverageRating(ratingSum, allCount)
+			let [averageRating, averageRatingEmoji] = createAverageRating(ratingCounts)
 
 			if (averageRatingEmoji != null) {
 				setCurrentUserAverageRatingEmoji(<img style={{

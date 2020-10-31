@@ -122,7 +122,7 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 					><Icon24Link /></Button>
 					<Button mode='tertiary' stretched onClick={async () => {
 						try {
-							await bridge.send('VKWebAppShare', { link: `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}` });
+							await bridge.send('VKWebAppShare', { link: `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}` })
 						} catch (err) {
 							if (err.error_data.error_code !== 4) {
 								console.error(err)
@@ -147,7 +147,7 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 									autoclose: true,
 									action: async () => {
 										try {
-											await bridge.send("VKWebAppCopyText", { "text": targetstr });
+											await bridge.send("VKWebAppCopyText", { "text": targetstr })
 										} catch (err) {
 											if (err.error_data.error_code !== 4) {
 												console.error(err)
@@ -308,36 +308,28 @@ function RatingCardBar({ imageSrc, imageAlt, biggestCount, color, count }) {
 	)
 }
 
-// rating - array
-// [4] - 5
-// [3] - 4
-// [2] - 3
-// [1] - 2
-// [0] - 1
-function RatingCard({ rating }) {
+// ratingCounts - array
+// [4] - 5 rating count
+// [3] - 4 rating count
+// [2] - 3 rating count
+// [1] - 2 rating count
+// [0] - 1 rating count
+
+function RatingCard({ ratingCounts }) {
 	const [ratingCard, setRatingCard] = useState(null)
+
 	useEffect(() => {
-		if (rating == null) {
+		if (ratingCounts == null) {
 			return
 		}
 
-		let ratingSum = [0, 0, 0, 0, 0]
-
-		for (let i = 0; i < rating.length; i++) {
-			for (let k = 0; k < 5; k++) {
-				ratingSum[k] += rating[i][k]
-			}
-		}
-
 		let biggestCount = 0
-		let allCount = 0
 
-		for (let i = 0; i < ratingSum.length; i++) {
-			allCount += ratingSum[i]
-			biggestCount = Math.max(biggestCount, ratingSum[i]);
+		for (let i = 0; i < ratingCounts.length; i++) {
+			biggestCount = Math.max(biggestCount, ratingCounts[i])
 		}
 
-		let [averageRating, averageRatingEmoji] = createAverageRating(ratingSum, allCount)
+		let [averageRating, averageRatingEmoji] = createAverageRating(ratingCounts)
 
 		setRatingCard(<Div>
 			<Group
@@ -347,11 +339,11 @@ function RatingCard({ rating }) {
 				<Card size='l'>
 					<Card size='l' mode='shadow'>
 						<Div>
-							<RatingCardBar imageSrc={LoveEmoji} imageAlt='5' biggestCount={biggestCount} color='#FFC107' count={ratingSum[4]} />
-							<RatingCardBar imageSrc={LikeEmoji} imageAlt='4' biggestCount={biggestCount} color='#4CD964' count={ratingSum[3]} />
-							<RatingCardBar imageSrc={NeutralEmoji} imageAlt='3' biggestCount={biggestCount} color='#63B9BA' count={ratingSum[2]} />
-							<RatingCardBar imageSrc={DislikeEmoji} imageAlt='2' biggestCount={biggestCount} color='#F4E7C3' count={ratingSum[1]} />
-							<RatingCardBar imageSrc={HateEmoji} imageAlt='1' biggestCount={biggestCount} color='#E64646' count={ratingSum[0]} />
+							<RatingCardBar imageSrc={LoveEmoji} imageAlt='5' biggestCount={biggestCount} color='#FFC107' count={ratingCounts[4]} />
+							<RatingCardBar imageSrc={LikeEmoji} imageAlt='4' biggestCount={biggestCount} color='#4CD964' count={ratingCounts[3]} />
+							<RatingCardBar imageSrc={NeutralEmoji} imageAlt='3' biggestCount={biggestCount} color='#63B9BA' count={ratingCounts[2]} />
+							<RatingCardBar imageSrc={DislikeEmoji} imageAlt='2' biggestCount={biggestCount} color='#F4E7C3' count={ratingCounts[1]} />
+							<RatingCardBar imageSrc={HateEmoji} imageAlt='1' biggestCount={biggestCount} color='#E64646' count={ratingCounts[0]} />
 						</Div>
 					</Card>
 					{averageRatingEmoji ? <img style={{
@@ -362,31 +354,34 @@ function RatingCard({ rating }) {
 				</Card>
 			</Group>
 		</Div>)
-	}, [rating])
+	}, [ratingCounts])
 
 	return ratingCard
 }
 
 function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, user }) {
 	const [isFetching, setIsFetching] = useState(false)
-	const [rating, setRating] = useState(null)
+	const [ratingCounts, setRatingCounts] = useState(null)
 
 	const fetchRating = useCallback(async () => {
+		let prevRatingCounts = ratingCounts
+
 		setRating(null)
 
-		let data = null
+		let ratingCounts = null
 		try {
-			data = await getRating(user.id)
+			ratingCounts = (await getRating(user.id)).rating_counts
 		} catch (err) {
 			console.error(err)
 		}
 
-		if (data == null || !data.rating || data.rating.length !== 7) {
+		if (!ratingCounts) {
+			setRatingCounts(prevRatingCounts)
 			showErrorSnackbar(setSnackbar, "Не удалось получить данные о рейтинге")
 			return
 		}
 
-		setRating(data.rating)
+		setRatingCounts(ratingCounts)
 	}, [setSnackbar, user])
 
 	const [promoBanner, setPromoBanner] = useState(null)
@@ -423,7 +418,7 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 
 			{promoBanner}
 
-			{rating != null ? <RatingCard rating={rating} /> : <PanelSpinner />}
+			{ratingCounts != null ? <RatingCard ratingCounts={ratingCounts} /> : <PanelSpinner />}
 
 			<Footer>Все эмодзи сделаны <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – проект свободных эмодзи и иконок. Лицензия: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link></Footer>
 		</PullToRefresh>
@@ -431,6 +426,3 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 }
 
 export default Profile
-
-// (средний_рейтинг * количество_оценивших + новая_оценка) / (количество_оценивших + 1) = новый_средний_рейтинг
-// (средний_рейтинг_за_день_A * количество_оценивших_в_день_A + средний_рейтинг_за_день_B * количество_оценивших_в_день_B) / (количество_оценивших_в_день_A + количество_оценивших_в_день_B) = средний_рейтинг_за_дни_A_и_B

@@ -4,12 +4,14 @@ import NeutralEmoji from 'openmoji/color/svg/1F610.svg'
 import DislikeEmoji from 'openmoji/color/svg/1F627.svg'
 import HateEmoji from 'openmoji/color/svg/1F621.svg'
 
-function createAverageRating(ratingSum, allCount) {
+function createAverageRating(ratingCounts) {
+    let allCount = ratingCounts[4] + ratingCounts[3] + ratingCounts[2] + ratingCounts[1] + ratingCounts[0]
+
     let averageRating = 0
     let averageRatingEmoji = null
 
     if (allCount >= 3) {
-        averageRating = (5 * ratingSum[4] + 4 * ratingSum[3] + 3 * ratingSum[2] + 2 * ratingSum[1] + ratingSum[0]) / allCount
+        averageRating = (5 * ratingCounts[4] + 4 * ratingCounts[3] + 3 * ratingCounts[2] + 2 * ratingCounts[1] + ratingCounts[0]) / allCount
 
         // Hate:    1.0 - 1.8
         // Dislike: 1.8 - 2.6

@@ -367,20 +367,20 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 
 		setRatingCounts(null)
 
-		let ratingCounts = null
+		let ratingCountsData = null
 		try {
-			ratingCounts = (await getRating(user.id)).rating_counts
+			ratingCountsData = (await getRating(user.id)).rating_counts
 		} catch (err) {
 			console.error(err)
 		}
 
-		if (!ratingCounts) {
+		if (!ratingCountsData) {
 			setRatingCounts(prevRatingCounts)
 			showErrorSnackbar(setSnackbar, "Не удалось получить данные о рейтинге")
 			return
 		}
 
-		setRatingCounts(ratingCounts)
+		setRatingCounts(ratingCountsData)
 	}, [setSnackbar, user])
 
 	const [promoBanner, setPromoBanner] = useState(null)

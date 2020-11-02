@@ -1,4 +1,4 @@
-const endpoint = 'https://sociorate-backend.herokuapp.com'
+const endpoint = (process.env.NODE_ENV === 'development' ? 'http://localhost:8080' : 'https://sociorate-backend.herokuapp.com')
 const urlParams = (() => {
     let params = new URLSearchParams(window.location.search)
 

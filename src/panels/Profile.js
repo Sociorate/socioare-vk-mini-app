@@ -54,6 +54,7 @@ import NeutralEmoji from 'openmoji/color/svg/1F610.svg'
 import DislikeEmoji from 'openmoji/color/svg/1F627.svg'
 import HateEmoji from 'openmoji/color/svg/1F621.svg'
 
+// TODO: рекламный блок в версии vk.com и m.vk.com
 // TODO: анимация на появление кнопок для оценивания
 
 function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {

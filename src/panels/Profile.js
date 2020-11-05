@@ -306,6 +306,7 @@ RatingButtons.propTypes = {
 	fetchRating: PropTypes.func,
 }
 
+// TODO: Сделать полосочки закруглёнными
 function RatingCardBar({ imageSrc, imageAlt, color, count, biggestCount }) {
 	return (
 		<div style={{

@@ -47,14 +47,14 @@ function Slideshow({ id, doneCallback }) {
                     >Sociorate - уникальное приложение человеческого рейтинга.</Placeholder>
                     <Placeholder
                         icon={<Icon56LikeOutline />}
-                        header="Оценивайте людей"
-                        action={<Button size="xl" mode="tertiary" onClick={() => { setSlideIndex(2) }}>Интересно!</Button>}
-                    >После каждой встречи</Placeholder>
+                        header="Оценивайте"
+                        action={<Button size="xl" mode="tertiary" onClick={() => { setSlideIndex(2) }}>Интересно</Button>}
+                    >Каждую встречу с человеком</Placeholder>
                     <Placeholder
                         icon={<Icon56UsersOutline />}
                         header="Узнавайте рейтинг любого человека"
                         action={<Button size="xl" mode="tertiary" onClick={() => { doneCallback() }}>Начать!</Button>}
-                    >И следите за своим ;)</Placeholder>
+                    >И следите за своим</Placeholder>
                 </Gallery>
             </Div>
         </Panel>

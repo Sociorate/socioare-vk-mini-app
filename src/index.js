@@ -144,7 +144,7 @@ function App() {
         setThemeOption(newThemeOption)
 
         try {
-            await bridge.send('VKWebAppStorageSet', { key: 'theme_option', value: newThemeOption })
+            await bridge.send('VKWebAppStorageSet', { key: 'theme_option', value: String(newThemeOption) })
         } catch (err) {
             console.error(err)
         }
@@ -152,24 +152,25 @@ function App() {
 
     useEffect(() => {
         const fetchThingsFromStorage = async () => {
-            let storedThemeOption = null
             try {
-                storedThemeOption = (await bridge.send('VKWebAppStorageGet', { keys: ['theme_option'] })).keys[0].value
+                let data = (await bridge.send('VKWebAppStorageGet', { keys: ['theme_option', 'is_slideshow_done'] })).keys
+
+                for (let i = 0; i < data.length; i++) {
+                    switch (data[i].key) {
+                        case 'theme_option':
+                            setThemeOption(String(data[i].value))
+                            break
+                        case 'is_slideshow_done':
+                            setIsSlideshowDone(Boolean(data[i].value))
+                            break
+                        default:
+                    }
+                }
             } catch (err) {
                 console.error(err)
             }
-            setThemeOption(String(storedThemeOption))
+
             setIsThemeLoaded(true)
-
-            let storedIsSlideshowDone = null
-
-            try {
-                storedIsSlideshowDone = (await bridge.send('VKWebAppStorageGet', { keys: ['is_slideshow_done'] })).keys[0].value
-            } catch (err) {
-                console.error(err)
-            }
-
-            setIsSlideshowDone(Boolean(storedIsSlideshowDone))
         }
         fetchThingsFromStorage()
 
@@ -265,7 +266,7 @@ function App() {
                     setIsSlideshowDone(true)
 
                     try {
-                        await bridge.send('VKWebAppStorageSet', { key: 'is_slideshow_done', value: 'true' })
+                        await bridge.send('VKWebAppStorageSet', { key: 'is_slideshow_done', value: String(true) })
                     } catch (err) {
                         console.error(err)
                     }

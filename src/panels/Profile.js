@@ -48,14 +48,13 @@ import {
 
 import createAverageRating from './_createAverageRating'
 
-import LoveEmoji from 'openmoji/color/svg/1F929.svg'
-import LikeEmoji from 'openmoji/color/svg/1F60A.svg'
-import NeutralEmoji from 'openmoji/color/svg/1F610.svg'
-import DislikeEmoji from 'openmoji/color/svg/1F627.svg'
-import HateEmoji from 'openmoji/color/svg/1F621.svg'
+import LoveEmoji from '../openmoji-edited/1F929.svg'
+import LikeEmoji from '../openmoji-edited/1F60A.svg'
+import NeutralEmoji from '../openmoji-edited/1F610.svg'
+import DislikeEmoji from '../openmoji-edited/1F627.svg'
+import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок в версии vk.com и m.vk.com
-// TODO: анимация на появление кнопок для оценивания
 
 function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
 	const [snackbar, setSnackbar] = useState(null)
@@ -76,7 +75,7 @@ function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
 
 		const saveLastViewed = async () => {
 			try {
-				let data = (await bridge.send('VKWebAppStorageGet', { keys: ['last_viewed_profiles'] })).keys[0].value
+				let data = String((await bridge.send('VKWebAppStorageGet', { keys: ['last_viewed_profiles'] })).keys[0].value)
 				let fetchedUsers = data.split(',')
 
 				const index = fetchedUsers.indexOf(String(user.id))
@@ -90,7 +89,7 @@ function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
 					fetchedUsers.pop()
 				}
 
-				await bridge.send('VKWebAppStorageSet', { key: 'last_viewed_profiles', value: fetchedUsers.join(',') })
+				await bridge.send('VKWebAppStorageSet', { key: 'last_viewed_profiles', value: String(fetchedUsers.join(',')) })
 			} catch (err) {
 				console.error(err)
 			}
@@ -261,7 +260,7 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 
 			<Footer style={{
 				marginTop: '16px',
-			}}>Оценивайте людей после каждой встречи нажимая на эмодзи выше</Footer>
+			}}>Оценивайте каждую встречу нажимая на эмодзи выше</Footer>
 		</React.Fragment>
 	)
 }
@@ -419,8 +418,6 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 			{promoBanner}
 
 			{ratingCounts != null ? <RatingCard ratingCounts={ratingCounts} /> : <PanelSpinner />}
-
-			<Footer>Все эмодзи сделаны <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – проект свободных эмодзи и иконок. Лицензия: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link></Footer>
 		</PullToRefresh>
 	)
 }

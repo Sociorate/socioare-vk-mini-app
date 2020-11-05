@@ -1,8 +1,8 @@
-import LoveEmoji from 'openmoji/color/svg/1F929.svg'
-import LikeEmoji from 'openmoji/color/svg/1F60A.svg'
-import NeutralEmoji from 'openmoji/color/svg/1F610.svg'
-import DislikeEmoji from 'openmoji/color/svg/1F627.svg'
-import HateEmoji from 'openmoji/color/svg/1F621.svg'
+import LoveEmoji from '../openmoji-edited/1F929.svg'
+import LikeEmoji from '../openmoji-edited/1F60A.svg'
+import NeutralEmoji from '../openmoji-edited/1F610.svg'
+import DislikeEmoji from '../openmoji-edited/1F627.svg'
+import HateEmoji from '../openmoji-edited/1F621.svg'
 
 function createAverageRating(ratingCounts) {
     let allCount = ratingCounts[4] + ratingCounts[3] + ratingCounts[2] + ratingCounts[1] + ratingCounts[0]

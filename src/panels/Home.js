@@ -105,7 +105,7 @@ function Home({ id, go, setPopout, changeThemeOption, currentUserID }) {
 function LastViewedProfilesPlaceholder() {
 	return (
 		<Placeholder
-			header="Оценивайте людей"
+			header="Оценивайте встречи"
 			icon={<Icon56HistoryOutline />}
 		>Последние открытые профили будут отображаться здесь</Placeholder>
 	)
@@ -144,7 +144,7 @@ function ProfileSelection({ go, currentUserID }) {
 		let data = ''
 
 		try {
-			data = (await bridge.send('VKWebAppStorageGet', { keys: ['last_viewed_profiles'] })).keys[0].value
+			data = String((await bridge.send('VKWebAppStorageGet', { keys: ['last_viewed_profiles'] })).keys[0].value)
 		} catch (err) {
 			console.error(err)
 			showErrorSnackbar(setSnackbar, 'Не удалось загрузить последние открытые профили')
@@ -371,7 +371,7 @@ function Other({ setPopout, changeThemeOption }) {
 				Сменить цветовую тему
 			</SimpleCell>
 
-			<Footer>Все эмодзи сделаны <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – проект свободных эмодзи и иконок. Лицензия: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link><br />All emojis designed by <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – the open-source emoji and icon project. License: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link></Footer>
+			<Footer>В этом приложении используются (С ИЗМЕНЕНИЯМИ) эмодзи <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – проект свободных эмодзи и иконок. Лицензия: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link><br />In this app are used (WITH CHANGES) <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> emojis – the open-source emoji and icon project. License: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link></Footer>
 
 			{snackbar}
 		</Group>

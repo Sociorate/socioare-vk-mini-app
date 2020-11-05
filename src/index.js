@@ -283,5 +283,5 @@ function App() {
 ReactDOM.render(<React.StrictMode><App /></React.StrictMode>, document.getElementById('root'))
 
 if (process.env.NODE_ENV === 'development') {
-    import('./eruda').then(({ default: eruda }) => { }) //runtime download
+    import('./eruda') //runtime download
 }

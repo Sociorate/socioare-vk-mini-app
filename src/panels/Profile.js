@@ -4,6 +4,8 @@ import React, {
 	useCallback,
 } from 'react'
 
+import PropTypes from 'prop-types'
+
 import {
 	Panel,
 	PanelHeader,
@@ -13,7 +15,6 @@ import {
 	RichCell,
 	Div,
 	Avatar,
-	Link,
 	Footer,
 	Card,
 	Subhead,
@@ -108,6 +109,21 @@ function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
 	)
 }
 
+Profile.propTypes = {
+	id: PropTypes.string,
+	go: PropTypes.func,
+	setPopout: PropTypes.func,
+	executeReCaptcha: PropTypes.func,
+	currentUserID: PropTypes.number,
+	user: PropTypes.shape({
+		id: PropTypes.number,
+		screen_name: PropTypes.string,
+		first_name: PropTypes.string,
+		last_name: PropTypes.string,
+		photo_200: PropTypes.string,
+	})
+}
+
 function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 	return (
 		<RichCell
@@ -186,6 +202,18 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 	)
 }
 
+UserProfileRichCell.propTypes = {
+	setPopout: PropTypes.func,
+	setSnackbar: PropTypes.func,
+	user: PropTypes.shape({
+		id: PropTypes.number,
+		screen_name: PropTypes.string,
+		first_name: PropTypes.string,
+		last_name: PropTypes.string,
+		photo_200: PropTypes.string,
+	})
+}
+
 function RateButton({ imageSrc, code, chooseRate }) {
 	return (
 		<Button
@@ -215,6 +243,12 @@ function RateButton({ imageSrc, code, chooseRate }) {
 			}} src={imageSrc} alt={code} />
 		</Button>
 	)
+}
+
+RateButton.propTypes = {
+	imageSrc: PropTypes.string,
+	code: PropTypes.string,
+	chooseRate: PropTypes.func,
 }
 
 function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
@@ -265,7 +299,14 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 	)
 }
 
-function RatingCardBar({ imageSrc, imageAlt, biggestCount, color, count }) {
+RatingButtons.propTypes = {
+	userid: PropTypes.number,
+	setSnackbar: PropTypes.func,
+	executeReCaptcha: PropTypes.func,
+	fetchRating: PropTypes.func,
+}
+
+function RatingCardBar({ imageSrc, imageAlt, color, count, biggestCount }) {
 	return (
 		<div style={{
 			height: '28px',
@@ -305,6 +346,14 @@ function RatingCardBar({ imageSrc, imageAlt, biggestCount, color, count }) {
 			>{count}</Subhead>
 		</div>
 	)
+}
+
+RatingCardBar.propTypes = {
+	imageSrc: PropTypes.string,
+	imageAlt: PropTypes.string,
+	color: PropTypes.string,
+	count: PropTypes.number,
+	biggestCount: PropTypes.number,
 }
 
 // ratingCounts - array
@@ -420,6 +469,20 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 			{ratingCounts != null ? <RatingCard ratingCounts={ratingCounts} /> : <PanelSpinner />}
 		</PullToRefresh>
 	)
+}
+
+UserProfile.propTypes = {
+	setPopout: PropTypes.func,
+	setSnackbar: PropTypes.func,
+	executeReCaptcha: PropTypes.func,
+	currentUserID: PropTypes.number,
+	user: PropTypes.shape({
+		id: PropTypes.number,
+		screen_name: PropTypes.string,
+		first_name: PropTypes.string,
+		last_name: PropTypes.string,
+		photo_200: PropTypes.string,
+	}),
 }
 
 export default Profile

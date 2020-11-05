@@ -2,6 +2,8 @@ import React, {
     useState,
 } from 'react'
 
+import PropTypes from 'prop-types'
+
 import {
     Panel,
     Gallery,
@@ -59,6 +61,11 @@ function Slideshow({ id, doneCallback }) {
             </Div>
         </Panel>
     )
+}
+
+Slideshow.propTypes = {
+    id: PropTypes.string,
+    doneCallback: PropTypes.func,
 }
 
 export default Slideshow

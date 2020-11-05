@@ -1,4 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, {
+    useEffect,
+    useState,
+} from 'react'
+
+import PropTypes from 'prop-types'
 
 import {
     Panel,
@@ -124,6 +129,11 @@ function Friends({ id, go }) {
     )
 }
 
+Friends.propTypes = {
+    id: PropTypes.string,
+    go: PropTypes.func,
+}
+
 function FriendsDisplay({ go, setSnackbar, accessToken, friends }) {
     let origFriendsCells = <UsersList go={go} users={friends} />
 
@@ -167,6 +177,19 @@ function FriendsDisplay({ go, setSnackbar, accessToken, friends }) {
             {friendsCells}
         </React.Fragment>
     )
+}
+
+FriendsDisplay.propTypes = {
+    go: PropTypes.func,
+    setSnackbar: PropTypes.func,
+    accessToken: PropTypes.string,
+    friends: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.number,
+        screen_name: PropTypes.string,
+        first_name: PropTypes.string,
+        last_name: PropTypes.string,
+        photo_200: PropTypes.string,
+    }))
 }
 
 export default Friends

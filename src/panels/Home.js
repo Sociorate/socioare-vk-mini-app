@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, {
+	useCallback,
+	useEffect,
+	useState,
+} from 'react'
+
+import PropTypes from 'prop-types'
 
 import {
 	Panel,
@@ -100,6 +106,14 @@ function Home({ id, go, setPopout, changeThemeOption, currentUserID }) {
 			{view}
 		</Panel>
 	)
+}
+
+Home.propTypes = {
+	id: PropTypes.string,
+	go: PropTypes.func,
+	setPopout: PropTypes.func,
+	changeThemeOption: PropTypes.func,
+	currentUserID: PropTypes.number,
 }
 
 function LastViewedProfilesPlaceholder() {
@@ -289,6 +303,11 @@ function ProfileSelection({ go, currentUserID }) {
 	)
 }
 
+ProfileSelection.propTypes = {
+	go: PropTypes.func,
+	currentUserID: PropTypes.number,
+}
+
 function Other({ setPopout, changeThemeOption }) {
 	const [snackbar, setSnackbar] = useState(null)
 
@@ -376,6 +395,11 @@ function Other({ setPopout, changeThemeOption }) {
 			{snackbar}
 		</Group>
 	)
+}
+
+Other.propTypes = {
+	setPopout: PropTypes.func,
+	changeThemeOption: PropTypes.func,
 }
 
 export default Home

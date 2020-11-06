@@ -294,7 +294,7 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 
 			<Footer style={{
 				marginTop: '16px',
-			}}>Оценивайте каждую встречу нажимая на эмодзи выше</Footer>
+			}}>Оценивайте людей после каждой встречи нажимая на эмодзи выше</Footer>
 		</React.Fragment>
 	)
 }
@@ -306,7 +306,6 @@ RatingButtons.propTypes = {
 	fetchRating: PropTypes.func,
 }
 
-// TODO: Сделать полосочки закруглёнными
 function RatingCardBar({ imageSrc, imageAlt, color, count, biggestCount }) {
 	return (
 		<div style={{
@@ -327,11 +326,13 @@ function RatingCardBar({ imageSrc, imageAlt, color, count, biggestCount }) {
 					height: '20px',
 					width: '100%',
 					backgroundColor: (document.body.attributes.getNamedItem('scheme').value == 'space_gray' ? '#232324' : '#f9f9f9'),
+					borderRadius: '8px',
 				}}>
 					<div style={{
 						height: '100%',
 						width: (biggestCount > 0 ? `${count / biggestCount * 100}%` : '0px'),
 						backgroundColor: color,
+						borderRadius: '8px',
 					}} />
 				</div>
 			</div>

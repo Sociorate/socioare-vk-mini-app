@@ -30,8 +30,6 @@ import bridge from '@vkontakte/vk-bridge'
 
 import ReCAPTCHA from "react-google-recaptcha"
 
-window.recaptchaOptions = { useRecaptchaNet: true }
-
 // TODO: роутинг (можно только чтоб кнопка назад работала на андройдах (и свайп на ios по совместительству))
 
 var reCaptchaCallback = null

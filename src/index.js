@@ -40,7 +40,7 @@ function App() {
     const [activePanel, setActivePanel] = useState('home')
     const [popout, setPopout] = useState(null)
 
-    const [currentUserID, setCurrentUserID] = useState(null)
+    const [currentUser, setCurrentUser] = useState(null)
     const [panelProfileUser, setPanelProfileUser] = useState(null)
 
     const reCaptchaRef = useRef()
@@ -174,11 +174,15 @@ function App() {
 
         const fetchCurrentUserID = async () => {
             try {
-                let user = await bridge.send('VKWebAppGetUserInfo')
-                if (!user.id) {
+                let userid = (new URLSearchParams(window.location.search)).get('vk_user_id')
+
+                let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
+                let user = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: userid, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response[0]
+                if (!user) {
                     return
                 }
-                setCurrentUserID(user.id)
+
+                setCurrentUser(user)
             } catch (err) {
                 console.error(err)
             }
@@ -228,7 +232,7 @@ function App() {
         fetchUserFromLocationHash()
     }, [isVKWebAppInitDone, go])
 
-    const isAppLoaded = isReCaptchaLoaded && isVKWebAppInitDone && isThemeLoaded && currentUserID != null && isSlideshowDone != null
+    const isAppLoaded = isReCaptchaLoaded && isVKWebAppInitDone && isThemeLoaded && currentUser != null && isSlideshowDone != null
 
     return (
         <React.Fragment>
@@ -270,9 +274,9 @@ function App() {
                     }
                 }} />
 
-                <Home id='home' go={go} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUserID={currentUserID} />
+                <Home id='home' go={go} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
                 <Friends id='friends' go={go} />
-                <Profile id='profile' go={go} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUserID={currentUserID} user={panelProfileUser} />
+                <Profile id='profile' go={go} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={panelProfileUser} />
             </View>
         </React.Fragment>
     )

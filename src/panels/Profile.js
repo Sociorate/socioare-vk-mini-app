@@ -57,7 +57,7 @@ import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок в версии vk.com и m.vk.com
 
-function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
+function Profile({ id, go, setPopout, executeReCaptcha, currentUser, user }) {
 	const [snackbar, setSnackbar] = useState(null)
 
 	useEffect(() => {
@@ -102,7 +102,7 @@ function Profile({ id, go, setPopout, executeReCaptcha, currentUserID, user }) {
 		<Panel id={id}>
 			<PanelHeader left={<PanelHeaderBack onClick={() => { go('home') }} />}><PanelHeaderContent>{user == null ? `Загрузка профиля` : `@${user.screen_name ? user.screen_name : `id${user.id}`}`}</PanelHeaderContent></PanelHeader>
 
-			{user ? <UserProfile setPopout={setPopout} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} currentUserID={currentUserID} user={user} /> : null}
+			{user ? <UserProfile setPopout={setPopout} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={user} /> : null}
 
 			{snackbar}
 		</Panel>
@@ -114,7 +114,9 @@ Profile.propTypes = {
 	go: PropTypes.func,
 	setPopout: PropTypes.func,
 	executeReCaptcha: PropTypes.func,
-	currentUserID: PropTypes.number,
+	currentUser: PropTypes.shape({
+		id: PropTypes.number,
+	}),
 	user: PropTypes.shape({
 		id: PropTypes.number,
 		screen_name: PropTypes.string,
@@ -409,7 +411,7 @@ function RatingCard({ ratingCounts }) {
 	return ratingCard
 }
 
-function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, user }) {
+function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUser, user }) {
 	const [isFetching, setIsFetching] = useState(false)
 	const [ratingCounts, setRatingCounts] = useState(null)
 
@@ -464,7 +466,7 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUserID, 
 		>
 			<UserProfileRichCell setPopout={setPopout} setSnackbar={setSnackbar} user={user} />
 
-			{currentUserID !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} fetchRating={fetchRating} /> : null}
+			{currentUser.id !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} fetchRating={fetchRating} /> : null}
 
 			{promoBanner}
 
@@ -477,7 +479,9 @@ UserProfile.propTypes = {
 	setPopout: PropTypes.func,
 	setSnackbar: PropTypes.func,
 	executeReCaptcha: PropTypes.func,
-	currentUserID: PropTypes.number,
+	currentUser: PropTypes.shape({
+		id: PropTypes.number,
+	}),
 	user: PropTypes.shape({
 		id: PropTypes.number,
 		screen_name: PropTypes.string,

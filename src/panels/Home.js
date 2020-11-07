@@ -26,6 +26,8 @@ import {
 	Footer,
 	ActionSheet,
 	ActionSheetItem,
+	Card,
+	CardGrid,
 } from '@vkontakte/vkui'
 
 import {
@@ -62,14 +64,18 @@ import platformSwitch from './_platformSwitch'
 
 // TODO: сделать вкладки сменяемыми свайпами
 
-function Home({ id, go, setPopout, changeThemeOption, currentUserID }) {
+function Home({ id, go, setPopout, changeThemeOption, currentUser }) {
+	if (currentUser == null) {
+		return <Panel id={id} />
+	}
+
 	const [currentTab, setCurrentTab] = useState('profile_selection')
 
 	let view = null
 
 	switch (currentTab) {
 		case 'profile_selection':
-			view = <ProfileSelection go={go} currentUserID={currentUserID} />
+			view = <ProfileSelection go={go} currentUser={currentUser} />
 			break
 		case 'other':
 			view = <Other setPopout={setPopout} changeThemeOption={changeThemeOption} />
@@ -109,11 +115,17 @@ function Home({ id, go, setPopout, changeThemeOption, currentUserID }) {
 }
 
 Home.propTypes = {
-	id: PropTypes.string,
-	go: PropTypes.func,
-	setPopout: PropTypes.func,
-	changeThemeOption: PropTypes.func,
-	currentUserID: PropTypes.number,
+	id: PropTypes.string.isRequired,
+	go: PropTypes.func.isRequired,
+	setPopout: PropTypes.func.isRequired,
+	changeThemeOption: PropTypes.func.isRequired,
+	currentUser: PropTypes.shape({
+		id: PropTypes.number,
+		screen_name: PropTypes.string,
+		first_name: PropTypes.string,
+		last_name: PropTypes.string,
+		photo_200: PropTypes.string,
+	}),
 }
 
 function LastViewedProfilesPlaceholder() {
@@ -125,7 +137,7 @@ function LastViewedProfilesPlaceholder() {
 	)
 }
 
-function ProfileSelection({ go, currentUserID }) {
+function ProfileSelection({ go, currentUser }) {
 	const [isFetching, setIsFetching] = useState(false)
 
 	const [currentUserAverageRatingEmoji, setCurrentUserAverageRatingEmoji] = useState(null)
@@ -136,7 +148,7 @@ function ProfileSelection({ go, currentUserID }) {
 
 	const fetchCurrentUserRating = useCallback(async () => {
 		try {
-			let ratingCounts = (await getRating(currentUserID)).rating_counts
+			let ratingCounts = (await getRating(currentUser.id)).rating_counts
 
 			let [averageRating, averageRatingEmoji] = createAverageRating(ratingCounts)
 
@@ -177,7 +189,7 @@ function ProfileSelection({ go, currentUserID }) {
 		} catch (err) {
 			if (err.error_data.error_code !== 1) {
 				console.error(err)
-				showErrorSnackbar(setSnackbar, 'Не удалось загрузить профили')
+				showErrorSnackbar(setSnackbar, 'Не удалось загрузить последние открытые профили')
 			}
 		}
 
@@ -241,57 +253,54 @@ function ProfileSelection({ go, currentUserID }) {
 			isFetching={isFetching}
 		>
 			<Group>
-				<SimpleCell before={<Icon28Profile />} after={currentUserAverageRatingEmoji} onClick={async () => {
-					try {
-						let user = await bridge.send('VKWebAppGetUserInfo')
-
-						try {
-							let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
-							user = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: user.id, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response[0]
-						} catch (err) {
-							console.log(err)
-						}
-
-						if (!user) {
-							throw new Error('`user` is empty')
-						}
-
-						go('profile', user)
-					} catch (err) {
-						console.error(err)
-						showErrorSnackbar(setSnackbar, 'Не удалось получить информацию о текущем профиле')
-					}
-				}}>Мой профиль</SimpleCell>
-
-				{platformSwitch(['mobile_android', 'mobile_iphone'],
-					<SimpleCell before={<Icon28QrCodeOutline />} onClick={async () => {
-						try {
-							let code = (await bridge.send("VKWebAppOpenCodeReader")).code_data
-							loadUser(code)
-						} catch (err) {
-							if (err.error_data.error_code !== 4) {
+				<CardGrid>
+					<Card size="l">
+						<SimpleCell style={{ borderRadius: 'inherit' }} before={<Icon28Profile />} after={currentUserAverageRatingEmoji} onClick={async () => {
+							try {
+								go('profile', currentUser)
+							} catch (err) {
 								console.error(err)
-								showErrorSnackbar(setSnackbar, 'Не удалось запустить сканер QR кода')
+								showErrorSnackbar(setSnackbar, 'Не удалось получить информацию о текущем профиле')
 							}
-						}
-					}}>Открыть по QR коду</SimpleCell>
-				)}
+						}}>Мой профиль</SimpleCell>
+					</Card>
 
-				<SimpleCell before={<Icon28UserOutline />} onClick={() => { go('friends') }}>Выбрать из друзей</SimpleCell>
+					{platformSwitch(['mobile_android', 'mobile_iphone'],
+						<Card size="l">
+							<SimpleCell style={{ borderRadius: 'inherit' }} before={<Icon28QrCodeOutline />} onClick={async () => {
+								try {
+									let code = (await bridge.send("VKWebAppOpenCodeReader")).code_data
+									loadUser(code)
+								} catch (err) {
+									if (err.error_data.error_code !== 4) {
+										console.error(err)
+										showErrorSnackbar(setSnackbar, 'Не удалось запустить сканер QR кода')
+									}
+								}
+							}}>Открыть по QR коду</SimpleCell>
+						</Card>
+					)}
 
-				<FormLayout>
-					<Input top='По @ID или ссылке ВК/Sociorate' value={userIDInput} onChange={(event) => {
-						setUserIDInput(event.target.value)
-					}} type='text' placeholder='Введите ID или ссылку' />
-					<Button size='xl' onClick={async () => {
-						if (userIDInput === '') {
-							showErrorSnackbar(setSnackbar, 'Введите ID или ссылку ВК/Sociorate.')
-							return
-						}
+					<Card size="l">
+						<SimpleCell style={{ borderRadius: 'inherit' }} before={<Icon28UserOutline />} onClick={() => { go('friends') }}>Выбрать из друзей</SimpleCell>
+					</Card>
 
-						loadUser(userIDInput)
-					}}>Открыть</Button>
-				</FormLayout>
+					<Card size="l">
+						<FormLayout>
+							<Input top='По @ID или ссылке ВК/Sociorate' value={userIDInput} onChange={(event) => {
+								setUserIDInput(event.target.value)
+							}} type='text' placeholder='Введите ID или ссылку' />
+							<Button size='xl' onClick={async () => {
+								if (userIDInput === '') {
+									showErrorSnackbar(setSnackbar, 'Введите ID или ссылку ВК/Sociorate.')
+									return
+								}
+
+								loadUser(userIDInput)
+							}}>Открыть</Button>
+						</FormLayout>
+					</Card>
+				</CardGrid>
 			</Group>
 
 			<Group header={<Header mode='secondary'>Последние открытые</Header>}>
@@ -305,7 +314,13 @@ function ProfileSelection({ go, currentUserID }) {
 
 ProfileSelection.propTypes = {
 	go: PropTypes.func,
-	currentUserID: PropTypes.number,
+	currentUser: PropTypes.shape({
+		id: PropTypes.number,
+		screen_name: PropTypes.string,
+		first_name: PropTypes.string,
+		last_name: PropTypes.string,
+		photo_200: PropTypes.string,
+	}),
 }
 
 function Other({ setPopout, changeThemeOption }) {

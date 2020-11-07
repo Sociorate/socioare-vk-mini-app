@@ -252,6 +252,7 @@ function ProfileSelection({ go, currentUser }) {
 			}}
 			isFetching={isFetching}
 		>
+			{/* TODO: починить дезигн */}
 			<Group>
 				<CardGrid>
 					<Card size="l">

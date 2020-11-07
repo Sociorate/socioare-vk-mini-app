@@ -285,7 +285,7 @@ function ProfileSelection({ go, currentUser }) {
 						<SimpleCell style={{ borderRadius: 'inherit' }} before={<Icon28UserOutline />} onClick={() => { go('friends') }}>Выбрать из друзей</SimpleCell>
 					</Card>
 
-					<Card size="l">
+					<Card mode='outline' size="l">
 						<FormLayout>
 							<Input top='По @ID или ссылке ВК/Sociorate' value={userIDInput} onChange={(event) => {
 								setUserIDInput(event.target.value)

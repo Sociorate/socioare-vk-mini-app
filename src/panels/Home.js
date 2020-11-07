@@ -28,10 +28,11 @@ import {
 	ActionSheetItem,
 	Card,
 	CardGrid,
+	RichCell,
+	Avatar,
 } from '@vkontakte/vkui'
 
 import {
-	Icon28Profile,
 	Icon28UserOutline,
 	Icon28QrCodeOutline,
 	Icon28FavoriteOutline,
@@ -154,9 +155,10 @@ function ProfileSelection({ go, currentUser }) {
 
 			if (averageRatingEmoji != null) {
 				setCurrentUserAverageRatingEmoji(<img style={{
-					height: '28px',
-					display: 'block',
-					margin: 'auto',
+					height: '56px',
+					position: 'absolute',
+					right: 0,
+					bottom: 0,
 				}} src={averageRatingEmoji} alt={averageRating} />)
 			}
 		} catch (err) {
@@ -252,38 +254,48 @@ function ProfileSelection({ go, currentUser }) {
 			}}
 			isFetching={isFetching}
 		>
-			{/* TODO: починить дезигн */}
-			<Group>
+			<Group separator={false}>
 				<CardGrid>
 					<Card size="l">
-						<SimpleCell style={{ borderRadius: 'inherit' }} before={<Icon28Profile />} after={currentUserAverageRatingEmoji} onClick={async () => {
-							try {
-								go('profile', currentUser)
-							} catch (err) {
-								console.error(err)
-								showErrorSnackbar(setSnackbar, 'Не удалось получить информацию о текущем профиле')
-							}
-						}}>Мой профиль</SimpleCell>
+						<RichCell
+							style={{ borderRadius: 'inherit' }}
+							after={currentUserAverageRatingEmoji}
+							before={<Avatar size={56} src={currentUser.photo_200} />}
+							caption='Мой профиль'
+							onClick={async () => {
+								try {
+									go('profile', currentUser)
+								} catch (err) {
+									console.error(err)
+									showErrorSnackbar(setSnackbar, 'Не удалось получить информацию о текущем профиле')
+								}
+							}}>{`${currentUser.first_name} ${currentUser.last_name}`}</RichCell>
 					</Card>
 
 					{platformSwitch(['mobile_android', 'mobile_iphone'],
 						<Card size="l">
-							<SimpleCell style={{ borderRadius: 'inherit' }} before={<Icon28QrCodeOutline />} onClick={async () => {
-								try {
-									let code = (await bridge.send("VKWebAppOpenCodeReader")).code_data
-									loadUser(code)
-								} catch (err) {
-									if (err.error_data.error_code !== 4) {
-										console.error(err)
-										showErrorSnackbar(setSnackbar, 'Не удалось запустить сканер QR кода')
+							<SimpleCell
+								style={{ borderRadius: 'inherit' }}
+								before={<Icon28QrCodeOutline />}
+								onClick={async () => {
+									try {
+										let code = (await bridge.send("VKWebAppOpenCodeReader")).code_data
+										loadUser(code)
+									} catch (err) {
+										if (err.error_data.error_code !== 4) {
+											console.error(err)
+											showErrorSnackbar(setSnackbar, 'Не удалось запустить сканер QR кода')
+										}
 									}
-								}
-							}}>Открыть по QR коду</SimpleCell>
+								}}>Открыть по QR коду</SimpleCell>
 						</Card>
 					)}
 
 					<Card size="l">
-						<SimpleCell style={{ borderRadius: 'inherit' }} before={<Icon28UserOutline />} onClick={() => { go('friends') }}>Выбрать из друзей</SimpleCell>
+						<SimpleCell
+							style={{ borderRadius: 'inherit' }}
+							before={<Icon28UserOutline />}
+							onClick={() => { go('friends') }}>Выбрать из друзей</SimpleCell>
 					</Card>
 
 					<Card mode='outline' size="l">

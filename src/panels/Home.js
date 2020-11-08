@@ -256,7 +256,7 @@ function ProfileSelection({ go, currentUser }) {
 		>
 			<Group separator={false}>
 				<CardGrid>
-					<Card size="l">
+					<Card size="l" mode='outline'>
 						<RichCell
 							style={{ borderRadius: 'inherit' }}
 							after={currentUserAverageRatingEmoji}

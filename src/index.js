@@ -115,21 +115,21 @@ function App() {
         reCaptchaRef.current.execute()
     }, [])
 
-    const changeTheme = useCallback((themeName) => {
-        const schemeAttribute = document.createAttribute('scheme')
-        switch (themeName) {
-            case 'dark':
-                schemeAttribute.value = 'space_gray'
-                setReCaptchaTheme('dark')
-                break
-            default:
-                schemeAttribute.value = 'client_light'
-                setReCaptchaTheme('light')
-        }
-        document.body.attributes.setNamedItem(schemeAttribute)
-    }, [])
-
     useEffect(() => {
+        const changeTheme = (themeName) => {
+            const schemeAttribute = document.createAttribute('scheme')
+            switch (themeName) {
+                case 'dark':
+                    schemeAttribute.value = 'space_gray'
+                    setReCaptchaTheme('dark')
+                    break
+                default:
+                    schemeAttribute.value = 'client_light'
+                    setReCaptchaTheme('light')
+            }
+            document.body.attributes.setNamedItem(schemeAttribute)
+        }
+
         if (themeOption === 'auto') {
             changeTheme(autoTheme)
             return

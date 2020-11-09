@@ -201,12 +201,12 @@ function ProfileSelection({ go, currentUser }) {
 		}
 
 		setLastProfilesView(<UsersList go={go} users={users} />)
-	}, [go])
+	}, [])
 
 	useEffect(() => {
 		fetchCurrentUserRating()
 		fetchLastViewedProfiles()
-	}, [fetchCurrentUserRating, fetchLastViewedProfiles])
+	}, [])
 
 	const loadUser = useCallback(async (stringWithUserID) => {
 		try {
@@ -272,7 +272,7 @@ function ProfileSelection({ go, currentUser }) {
 							}}>{`${currentUser.first_name} ${currentUser.last_name}`}</RichCell>
 					</Card>
 
-					{platformSwitch(['mobile_android', 'mobile_iphone'],
+					{platformSwitch(['mobile_android', 'mobile_iphone'], () => (
 						<Card mode='outline' size="l">
 							<SimpleCell
 								style={{ borderRadius: 'inherit' }}
@@ -289,7 +289,7 @@ function ProfileSelection({ go, currentUser }) {
 									}
 								}}>Открыть по QR коду</SimpleCell>
 						</Card>
-					)}
+					))}
 
 					<Card mode='outline' size="l">
 						<SimpleCell
@@ -341,7 +341,7 @@ function Other({ setPopout, changeThemeOption }) {
 
 	return (
 		<Group>
-			{platformSwitch(['mobile_android'],
+			{platformSwitch(['mobile_android'], () => (
 				<SimpleCell before={<Icon28HomeOutline />} onClick={async () => {
 					try {
 						await bridge.send("VKWebAppAddToHomeScreen")
@@ -354,9 +354,9 @@ function Other({ setPopout, changeThemeOption }) {
 					}
 					showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate на главный экран!')
 				}}>Добавить на глав. экран</SimpleCell>
-			)}
+			))}
 
-			{platformSwitch(['mobile_android', 'mobile_iphone'],
+			{platformSwitch(['mobile_android', 'mobile_iphone'], () => (
 				<SimpleCell before={<Icon28FavoriteOutline />} onClick={async () => {
 					try {
 						await bridge.send("VKWebAppAddToFavorites")
@@ -369,9 +369,9 @@ function Other({ setPopout, changeThemeOption }) {
 					}
 					showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate в избранное!')
 				}}>Добавить в избранное</SimpleCell>
-			)}
+			))}
 
-			{platformSwitch(['mobile_web', 'desktop_web', 'mobile_android_messenger', 'mobile_iphone_messenger'],
+			{platformSwitch(['mobile_web', 'desktop_web', 'mobile_android_messenger', 'mobile_iphone_messenger'], () => (
 				<SimpleCell before={<Icon28SmartphoneOutline />} onClick={async () => {
 					try {
 						await bridge.send("VKWebAppSendToClient")
@@ -384,7 +384,7 @@ function Other({ setPopout, changeThemeOption }) {
 					}
 					showSuccessSnackbar(setSnackbar, 'Уведомление отправлено!')
 				}}>Открыть в приложении ВК</SimpleCell>
-			)}
+			))}
 
 			<Separator />
 

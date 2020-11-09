@@ -116,7 +116,7 @@ function Friends({ id, go }) {
             }
         }
         fetchFriends()
-    }, [go])
+    }, [])
 
     return (
         <Panel id={id}>

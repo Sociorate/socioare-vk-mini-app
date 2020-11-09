@@ -276,7 +276,7 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 				showErrorSnackbar(setSnackbar, 'Не выполнить проверку ReCAPTCHA')
 			}
 		})
-	}, [executeReCaptcha, userid, setSnackbar, fetchRating])
+	}, [userid])
 
 	return (
 		<React.Fragment>
@@ -434,7 +434,7 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUser, us
 		}
 
 		setRatingCounts(ratingCountsData)
-	}, [setSnackbar, user])
+	}, [user])
 
 	const [promoBanner, setPromoBanner] = useState(null)
 
@@ -452,7 +452,7 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUser, us
 	useEffect(() => {
 		fetchRating()
 		fetchAds()
-	}, [fetchRating])
+	}, [])
 
 	return (
 		<PullToRefresh

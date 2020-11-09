@@ -14,13 +14,12 @@ import React, {
 import ReactDOM from 'react-dom'
 
 import {
-    Panel,
     View,
-    ScreenSpinner,
     Alert,
     Headline,
 } from '@vkontakte/vkui/'
 
+import Loading from './panels/Loading'
 import Slideshow from './panels/Slideshow'
 import Home from './panels/Home'
 import Friends from './panels/Friends'
@@ -37,7 +36,7 @@ var reCaptchaCallback = null
 function App() {
     const [isVKWebAppInitDone, setIsVKWebAppInitDone] = useState(false)
 
-    const [activePanel, setActivePanel] = useState('home')
+    const [activePanel, setActivePanel] = useState('loading')
     const [popout, setPopout] = useState(null)
 
     const [currentUser, setCurrentUser] = useState(null)
@@ -137,7 +136,7 @@ function App() {
         }
 
         changeTheme(themeOption)
-    }, [autoTheme, changeTheme, themeOption])
+    }, [autoTheme, themeOption])
 
     const changeThemeOption = useCallback(async (newThemeOption) => {
         setThemeOption(newThemeOption)
@@ -172,10 +171,10 @@ function App() {
                 for (let i = 0; i < data.length; i++) {
                     switch (data[i].key) {
                         case 'theme_option':
-                            themeOptionData = String(data[i].value)
+                            themeOptionData = data[i].value
                             break
                         case 'is_slideshow_done':
-                            isSlideshowDoneData = Boolean(data[i].value)
+                            isSlideshowDoneData = data[i].value
                             break
                     }
                 }
@@ -186,17 +185,17 @@ function App() {
             if (themeOptionData == null) {
                 setThemeOption('ligth')
             } else {
-                setThemeOption(themeOptionData)
+                setThemeOption(String(themeOptionData))
             }
             if (isSlideshowDoneData == null) {
-                setIsSlideshowDone('ligth')
+                setIsSlideshowDone(false)
             } else {
-                setIsSlideshowDone(isSlideshowDoneData)
+                setIsSlideshowDone(Boolean(isSlideshowDoneData))
             }
         }
         fetchThingsFromStorage()
 
-        const fetchUsers = async () => {
+        const fetchUserInLocationHashAndCurrentUser = async () => {
             try {
                 let userid = (new URLSearchParams(window.location.search)).get('vk_user_id')
 
@@ -221,6 +220,7 @@ function App() {
                 }
 
                 if (userid === '') {
+                    go('home')
                     return
                 }
 
@@ -233,13 +233,27 @@ function App() {
 
                 go('profile', user)
             } catch (err) {
+                go('home')
                 console.error(err)
             }
         }
-        fetchUsers()
-    }, [isVKWebAppInitDone, go])
+        fetchUserInLocationHashAndCurrentUser()
+    }, [isVKWebAppInitDone])
 
     const isAppLoaded = isReCaptchaLoaded && isVKWebAppInitDone && themeOption != null && currentUser != null && isSlideshowDone != null
+
+
+    const slideshowDoneCallback = useCallback(() => {
+        async () => {
+            setIsSlideshowDone(true)
+
+            try {
+                await bridge.send('VKWebAppStorageSet', { key: 'is_slideshow_done', value: String(true) })
+            } catch (err) {
+                console.error(err)
+            }
+        }
+    }, [])
 
     return (
         <React.Fragment>
@@ -268,18 +282,10 @@ function App() {
                 }}
             />
 
-            <View activePanel={isAppLoaded ? (isSlideshowDone ? activePanel : 'slideshow') : 'blank'} popout={isAppLoaded ? popout : <ScreenSpinner />}>
-                <Panel id='blank' />
+            <View activePanel={isAppLoaded ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'} popout={popout}>
+                <Loading id='loading' />
 
-                <Slideshow id='slideshow' go={go} doneCallback={async () => {
-                    setIsSlideshowDone(true)
-
-                    try {
-                        await bridge.send('VKWebAppStorageSet', { key: 'is_slideshow_done', value: String(true) })
-                    } catch (err) {
-                        console.error(err)
-                    }
-                }} />
+                <Slideshow id='slideshow' go={go} doneCallback={slideshowDoneCallback} />
 
                 <Home id='home' go={go} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
                 <Friends id='friends' go={go} />

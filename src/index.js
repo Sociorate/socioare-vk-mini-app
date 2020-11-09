@@ -278,7 +278,7 @@ function App() {
             <View activePanel={isAppLoaded ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'} popout={popout}>
                 <Loading id='loading' />
 
-                <Slideshow id='slideshow' setActivePanel={setActivePanel} doneCallback={slideshowDoneCallback} />
+                <Slideshow id='slideshow' doneCallback={slideshowDoneCallback} />
 
                 <Home id='home' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
                 <Friends id='friends' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} />

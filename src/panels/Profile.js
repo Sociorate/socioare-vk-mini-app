@@ -58,6 +58,10 @@ import HateEmoji from '../openmoji-edited/1F621.svg'
 // TODO: рекламный блок в версии vk.com и m.vk.com
 
 function Profile({ id, setActivePanel, setPopout, executeReCaptcha, currentUser, user }) {
+	if (currentUser == null) {
+		return <Panel id={id} />
+	}
+
 	const [snackbar, setSnackbar] = useState(null)
 
 	useEffect(() => {
@@ -116,14 +120,14 @@ Profile.propTypes = {
 	executeReCaptcha: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
 		id: PropTypes.number.isRequired,
-	}).isRequired,
+	}),
 	user: PropTypes.shape({
 		id: PropTypes.number.isRequired,
 		screen_name: PropTypes.string.isRequired,
 		first_name: PropTypes.string.isRequired,
 		last_name: PropTypes.string.isRequired,
 		photo_200: PropTypes.string.isRequired,
-	}).isRequired
+	})
 }
 
 function UserProfileRichCell({ setPopout, setSnackbar, user }) {

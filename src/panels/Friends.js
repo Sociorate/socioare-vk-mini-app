@@ -66,7 +66,7 @@ function Friends({ id, go }) {
                     let users = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: friend.id, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response
                     fetchedFriend = users[0]
                 } catch (err) {
-                    console.log(err)
+                    console.error(err)
                 }
 
                 go('profile', fetchedFriend ? fetchedFriend : friend)

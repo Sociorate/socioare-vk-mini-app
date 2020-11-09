@@ -272,7 +272,7 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 				showSuccessSnackbar(setSnackbar, 'Спасибо за вашу оценку!')
 				fetchRating()
 			} else if (error) {
-				console.log(error)
+				console.error(error)
 				showErrorSnackbar(setSnackbar, 'Не выполнить проверку ReCAPTCHA')
 			}
 		})

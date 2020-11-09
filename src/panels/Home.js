@@ -256,7 +256,7 @@ function ProfileSelection({ go, currentUser }) {
 		>
 			<Group separator={false}>
 				<CardGrid>
-					<Card size="l" mode='outline'>
+					<Card mode='outline' size="l">
 						<RichCell
 							style={{ borderRadius: 'inherit' }}
 							after={currentUserAverageRatingEmoji}
@@ -273,7 +273,7 @@ function ProfileSelection({ go, currentUser }) {
 					</Card>
 
 					{platformSwitch(['mobile_android', 'mobile_iphone'],
-						<Card size="l">
+						<Card mode='outline' size="l">
 							<SimpleCell
 								style={{ borderRadius: 'inherit' }}
 								before={<Icon28QrCodeOutline />}
@@ -291,7 +291,7 @@ function ProfileSelection({ go, currentUser }) {
 						</Card>
 					)}
 
-					<Card size="l">
+					<Card mode='outline' size="l">
 						<SimpleCell
 							style={{ borderRadius: 'inherit' }}
 							before={<Icon28UserOutline />}

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "cross-env PORT=10888 HTTPS=true react-scripts start",
+    "tunnel": "npx @vkontakte/vk-tunnel --insecure=1 --http-protocol=https --ws-protocol=wss --host=localhost --port=10888",
     "build": "react-scripts build",
     "predeploy": "npm run build",
     "deploy": "vk-miniapps-deploy"
@@ -14,20 +15,20 @@
   "license": "GPL-3.0",
   "devDependencies": {
     "cross-env": "^7.0.2",
-    "eslint": "^7.12.1",
+    "eslint": "^7.13.0",
     "eslint-plugin-react": "^7.21.5",
     "react-hot-loader": "^4.13.0",
     "react-scripts": "^4.0.0"
   },
   "dependencies": {
-    "@vkontakte/icons": "^1.49.0",
+    "@vkontakte/icons": "^1.51.0",
     "@vkontakte/vk-bridge": "^2.3.0",
-    "@vkontakte/vk-miniapps-deploy": "^0.0.21",
+    "@vkontakte/vk-miniapps-deploy": "^0.0.22",
     "@vkontakte/vk-qr": "^2.0.10",
-    "@vkontakte/vkui": "^3.12.8",
+    "@vkontakte/vkui": "^3.13.0",
     "babel-eslint": "^10.1.0",
     "chalk": "^4.1.0",
-    "core-js": "^3.6.5",
+    "core-js": "^3.7.0",
     "eruda": "^2.4.1",
     "eruda-code": "^2.0.0",
     "eruda-dom": "^2.0.0",

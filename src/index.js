@@ -48,15 +48,16 @@ function App() {
     const [isReCaptchaLoaded, setIsReCaptchaLoaded] = useState(false)
 
     const [autoTheme, setAutoTheme] = useState('light')
-    const [themeOption, setThemeOption] = useState('auto')
-    const [isThemeLoaded, setIsThemeLoaded] = useState(false)
+    const [themeOption, setThemeOption] = useState(null)
 
     const [isSlideshowDone, setIsSlideshowDone] = useState(null)
 
     useEffect(() => {
         const handler = ({ detail: { type, data } }) => {
-            if (type === 'VKWebAppUpdateConfig') {
-                setAutoTheme(data.scheme === 'space_gray' ? 'dark' : 'light')
+            switch (type) {
+                case 'VKWebAppUpdateConfig':
+                    setAutoTheme(data.scheme === 'space_gray' ? 'dark' : 'light')
+                    break
             }
         }
 
@@ -148,48 +149,6 @@ function App() {
         }
     }, [])
 
-    useEffect(() => {
-        const fetchThingsFromStorage = async () => {
-            try {
-                let data = (await bridge.send('VKWebAppStorageGet', { keys: ['theme_option', 'is_slideshow_done'] })).keys
-
-                for (let i = 0; i < data.length; i++) {
-                    switch (data[i].key) {
-                        case 'theme_option':
-                            setThemeOption(String(data[i].value))
-                            break
-                        case 'is_slideshow_done':
-                            setIsSlideshowDone(Boolean(data[i].value))
-                            break
-                        default:
-                    }
-                }
-            } catch (err) {
-                console.error(err)
-            }
-
-            setIsThemeLoaded(true)
-        }
-        fetchThingsFromStorage()
-
-        const fetchCurrentUserID = async () => {
-            try {
-                let userid = (new URLSearchParams(window.location.search)).get('vk_user_id')
-
-                let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
-                let user = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: userid, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response[0]
-                if (!user) {
-                    return
-                }
-
-                setCurrentUser(user)
-            } catch (err) {
-                console.error(err)
-            }
-        }
-        fetchCurrentUserID()
-    }, [isVKWebAppInitDone])
-
     const go = useCallback((panelid, user) => {
         if (user) {
             setPanelProfileUser(user)
@@ -203,7 +162,55 @@ function App() {
             return
         }
 
-        const fetchUserFromLocationHash = async () => {
+        const fetchThingsFromStorage = async () => {
+            let themeOptionData = null
+            let isSlideshowDoneData = null
+
+            try {
+                let data = (await bridge.send('VKWebAppStorageGet', { keys: ['theme_option', 'is_slideshow_done'] })).keys
+
+                for (let i = 0; i < data.length; i++) {
+                    switch (data[i].key) {
+                        case 'theme_option':
+                            themeOptionData = String(data[i].value)
+                            break
+                        case 'is_slideshow_done':
+                            isSlideshowDoneData = Boolean(data[i].value)
+                            break
+                    }
+                }
+            } catch (err) {
+                console.error(err)
+            }
+
+            if (themeOptionData == null) {
+                setThemeOption('ligth')
+            } else {
+                setThemeOption(themeOptionData)
+            }
+            if (isSlideshowDoneData == null) {
+                setIsSlideshowDone('ligth')
+            } else {
+                setIsSlideshowDone(isSlideshowDoneData)
+            }
+        }
+        fetchThingsFromStorage()
+
+        const fetchUsers = async () => {
+            try {
+                let userid = (new URLSearchParams(window.location.search)).get('vk_user_id')
+
+                let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
+                let user = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: userid, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response[0]
+                if (!user) {
+                    return
+                }
+
+                setCurrentUser(user)
+            } catch (err) {
+                console.error(err)
+            }
+
             try {
                 let userid = ''
 
@@ -229,10 +236,10 @@ function App() {
                 console.error(err)
             }
         }
-        fetchUserFromLocationHash()
+        fetchUsers()
     }, [isVKWebAppInitDone, go])
 
-    const isAppLoaded = isReCaptchaLoaded && isVKWebAppInitDone && isThemeLoaded && currentUser != null && isSlideshowDone != null
+    const isAppLoaded = isReCaptchaLoaded && isVKWebAppInitDone && themeOption != null && currentUser != null && isSlideshowDone != null
 
     return (
         <React.Fragment>
@@ -282,8 +289,8 @@ function App() {
     )
 }
 
-ReactDOM.render(<React.StrictMode><App /></React.StrictMode>, document.getElementById('root'))
-
 if (process.env.NODE_ENV === 'development') {
     import('./eruda') //runtime download
 }
+
+ReactDOM.render(<React.StrictMode><App /></React.StrictMode>, document.getElementById('root'))

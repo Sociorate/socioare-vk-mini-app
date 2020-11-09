@@ -28,7 +28,7 @@ import UsersList from './_UsersList'
 
 import bridge from '@vkontakte/vk-bridge'
 
-function Friends({ id, go }) {
+function Friends({ id, setActivePanel, setPanelProfileUser }) {
     const [snackbar, setSnackbar] = useState(null)
     const [friendsView, setFriendsView] = useState(null)
 
@@ -42,7 +42,7 @@ function Friends({ id, go }) {
             } catch (err) {
                 switch (err.error_data.error_code) {
                     case 4:
-                        go('home')
+                        setActivePanel('home')
                         return
                     case 6:
                         isErrNotSupportedPlatform = true
@@ -55,7 +55,7 @@ function Friends({ id, go }) {
             }
 
             if (friend == null && !isErrNotSupportedPlatform) {
-                go('home')
+                setActivePanel('home')
                 return
             }
 
@@ -69,7 +69,8 @@ function Friends({ id, go }) {
                     console.error(err)
                 }
 
-                go('profile', fetchedFriend ? fetchedFriend : friend)
+                setPanelProfileUser(fetchedFriend ? fetchedFriend : friend)
+                setActivePanel('profile')
 
                 return
             }
@@ -112,7 +113,15 @@ function Friends({ id, go }) {
             }
 
             if (friends !== null) {
-                setFriendsView(<FriendsDisplay go={go} setSnackbar={setSnackbar} accessToken={accessData.access_token} friends={friends} />)
+                setFriendsView(
+                    <FriendsDisplay
+                        setActivePanel={setActivePanel}
+                        setPanelProfileUser={setPanelProfileUser}
+                        setSnackbar={setSnackbar}
+                        accessToken={accessData.access_token}
+                        friends={friends}
+                    />
+                )
             }
         }
         fetchFriends()
@@ -120,7 +129,12 @@ function Friends({ id, go }) {
 
     return (
         <Panel id={id}>
-            <PanelHeader left={<PanelHeaderClose onClick={() => { go('home') }} />} separator={false}><PanelHeaderContent>Друзья</PanelHeaderContent></PanelHeader>
+            <PanelHeader
+                left={<PanelHeaderClose onClick={() => { setActivePanel('home') }} />}
+                separator={false}
+            >
+                <PanelHeaderContent>Друзья</PanelHeaderContent>
+            </PanelHeader>
 
             {friendsView}
 
@@ -130,12 +144,13 @@ function Friends({ id, go }) {
 }
 
 Friends.propTypes = {
-    id: PropTypes.string,
-    go: PropTypes.func,
+    id: PropTypes.string.isRequired,
+    setActivePanel: PropTypes.func.isRequired,
+    setPanelProfileUser: PropTypes.func.isRequired,
 }
 
-function FriendsDisplay({ go, setSnackbar, accessToken, friends }) {
-    let origFriendsCells = <UsersList go={go} users={friends} />
+function FriendsDisplay({ setActivePanel, setPanelProfileUser, setSnackbar, accessToken, friends }) {
+    let origFriendsCells = <UsersList setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} users={friends} />
 
     const [friendsCells, setFriendsCells] = useState(origFriendsCells)
 
@@ -171,7 +186,7 @@ function FriendsDisplay({ go, setSnackbar, accessToken, friends }) {
                     return
                 }
 
-                setFriendsCells(<UsersList go={go} users={friendsSearch} />)
+                setFriendsCells(<UsersList setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} users={friendsSearch} />)
             }} after={null} />
 
             {friendsCells}
@@ -180,16 +195,17 @@ function FriendsDisplay({ go, setSnackbar, accessToken, friends }) {
 }
 
 FriendsDisplay.propTypes = {
-    go: PropTypes.func,
-    setSnackbar: PropTypes.func,
-    accessToken: PropTypes.string,
+    setActivePanel: PropTypes.func.isRequired,
+    setPanelProfileUser: PropTypes.func.isRequired,
+    setSnackbar: PropTypes.func.isRequired,
+    accessToken: PropTypes.string.isRequired,
     friends: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.number,
-        screen_name: PropTypes.string,
-        first_name: PropTypes.string,
-        last_name: PropTypes.string,
-        photo_200: PropTypes.string,
-    }))
+        id: PropTypes.number.isRequired,
+        screen_name: PropTypes.string.isRequired,
+        first_name: PropTypes.string.isRequired,
+        last_name: PropTypes.string.isRequired,
+        photo_200: PropTypes.string.isRequired,
+    })).isRequired
 }
 
 export default Friends

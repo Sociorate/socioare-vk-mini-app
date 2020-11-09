@@ -65,7 +65,7 @@ import platformSwitch from './_platformSwitch'
 
 // TODO: сделать вкладки сменяемыми свайпами
 
-function Home({ id, go, setPopout, changeThemeOption, currentUser }) {
+function Home({ id, setActivePanel, setPanelProfileUser, setPopout, changeThemeOption, currentUser }) {
 	if (currentUser == null) {
 		return <Panel id={id} />
 	}
@@ -76,7 +76,7 @@ function Home({ id, go, setPopout, changeThemeOption, currentUser }) {
 
 	switch (currentTab) {
 		case 'profile_selection':
-			view = <ProfileSelection go={go} currentUser={currentUser} />
+			view = <ProfileSelection setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} currentUser={currentUser} />
 			break
 		case 'other':
 			view = <Other setPopout={setPopout} changeThemeOption={changeThemeOption} />
@@ -117,16 +117,17 @@ function Home({ id, go, setPopout, changeThemeOption, currentUser }) {
 
 Home.propTypes = {
 	id: PropTypes.string.isRequired,
-	go: PropTypes.func.isRequired,
+	setActivePanel: PropTypes.func.isRequired,
+	setPanelProfileUser: PropTypes.func.isRequired,
 	setPopout: PropTypes.func.isRequired,
 	changeThemeOption: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
-		id: PropTypes.number,
-		screen_name: PropTypes.string,
-		first_name: PropTypes.string,
-		last_name: PropTypes.string,
-		photo_200: PropTypes.string,
-	}),
+		id: PropTypes.number.isRequired,
+		screen_name: PropTypes.string.isRequired,
+		first_name: PropTypes.string.isRequired,
+		last_name: PropTypes.string.isRequired,
+		photo_200: PropTypes.string.isRequired,
+	}).isRequired,
 }
 
 function LastViewedProfilesPlaceholder() {
@@ -138,7 +139,7 @@ function LastViewedProfilesPlaceholder() {
 	)
 }
 
-function ProfileSelection({ go, currentUser }) {
+function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) {
 	const [isFetching, setIsFetching] = useState(false)
 
 	const [currentUserAverageRatingEmoji, setCurrentUserAverageRatingEmoji] = useState(null)
@@ -200,7 +201,7 @@ function ProfileSelection({ go, currentUser }) {
 			return
 		}
 
-		setLastProfilesView(<UsersList go={go} users={users} />)
+		setLastProfilesView(<UsersList setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} users={users} />)
 	}, [])
 
 	useEffect(() => {
@@ -225,7 +226,8 @@ function ProfileSelection({ go, currentUser }) {
 				return
 			}
 
-			go('profile', user)
+			setPanelProfileUser(user)
+			setActivePanel('profile')
 		} catch (err) {
 			if (err.error_data.error_code === 1) {
 				showErrorSnackbar(setSnackbar, 'Пользователь не найден')
@@ -234,7 +236,7 @@ function ProfileSelection({ go, currentUser }) {
 				showErrorSnackbar(setSnackbar, 'Не удалось загрузить профиль')
 			}
 		}
-	}, [go])
+	}, [])
 
 	return (
 		<PullToRefresh
@@ -264,7 +266,8 @@ function ProfileSelection({ go, currentUser }) {
 							caption='Мой профиль'
 							onClick={async () => {
 								try {
-									go('profile', currentUser)
+									setPanelProfileUser(currentUser)
+									setActivePanel('profile')
 								} catch (err) {
 									console.error(err)
 									showErrorSnackbar(setSnackbar, 'Не удалось получить информацию о текущем профиле')
@@ -295,7 +298,7 @@ function ProfileSelection({ go, currentUser }) {
 						<SimpleCell
 							style={{ borderRadius: 'inherit' }}
 							before={<Icon28UserOutline />}
-							onClick={() => { go('friends') }}>Выбрать из друзей</SimpleCell>
+							onClick={() => { setActivePanel('friends') }}>Выбрать из друзей</SimpleCell>
 					</Card>
 
 					<Card mode='outline' size="l">
@@ -326,14 +329,15 @@ function ProfileSelection({ go, currentUser }) {
 }
 
 ProfileSelection.propTypes = {
-	go: PropTypes.func,
+	setActivePanel: PropTypes.func.isRequired,
+	setPanelProfileUser: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
-		id: PropTypes.number,
-		screen_name: PropTypes.string,
-		first_name: PropTypes.string,
-		last_name: PropTypes.string,
-		photo_200: PropTypes.string,
-	}),
+		id: PropTypes.number.isRequired,
+		screen_name: PropTypes.string.isRequired,
+		first_name: PropTypes.string.isRequired,
+		last_name: PropTypes.string.isRequired,
+		photo_200: PropTypes.string.isRequired,
+	}).isRequired,
 }
 
 function Other({ setPopout, changeThemeOption }) {
@@ -426,8 +430,8 @@ function Other({ setPopout, changeThemeOption }) {
 }
 
 Other.propTypes = {
-	setPopout: PropTypes.func,
-	changeThemeOption: PropTypes.func,
+	setPopout: PropTypes.func.isRequired,
+	changeThemeOption: PropTypes.func.isRequired,
 }
 
 export default Home

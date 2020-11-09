@@ -148,14 +148,6 @@ function App() {
         }
     }, [])
 
-    const go = useCallback((panelid, user) => {
-        if (user) {
-            setPanelProfileUser(user)
-        }
-
-        setActivePanel(panelid)
-    }, [])
-
     useEffect(() => {
         if (!isVKWebAppInitDone) {
             return
@@ -220,7 +212,7 @@ function App() {
                 }
 
                 if (userid === '') {
-                    go('home')
+                    setActivePanel('home')
                     return
                 }
 
@@ -231,9 +223,10 @@ function App() {
                     throw new Error('`user` is empty')
                 }
 
-                go('profile', user)
+                setPanelProfileUser(user)
+                setActivePanel('profile')
             } catch (err) {
-                go('home')
+                setActivePanel('home')
                 console.error(err)
             }
         }
@@ -285,11 +278,11 @@ function App() {
             <View activePanel={isAppLoaded ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'} popout={popout}>
                 <Loading id='loading' />
 
-                <Slideshow id='slideshow' go={go} doneCallback={slideshowDoneCallback} />
+                <Slideshow id='slideshow' setActivePanel={setActivePanel} doneCallback={slideshowDoneCallback} />
 
-                <Home id='home' go={go} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
-                <Friends id='friends' go={go} />
-                <Profile id='profile' go={go} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={panelProfileUser} />
+                <Home id='home' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
+                <Friends id='friends' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} />
+                <Profile id='profile' setActivePanel={setActivePanel} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={panelProfileUser} />
             </View>
         </React.Fragment>
     )

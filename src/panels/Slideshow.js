@@ -64,8 +64,8 @@ function Slideshow({ id, doneCallback }) {
 }
 
 Slideshow.propTypes = {
-    id: PropTypes.string,
-    doneCallback: PropTypes.func,
+    id: PropTypes.string.isRequired,
+    doneCallback: PropTypes.func.isRequired,
 }
 
 export default Slideshow

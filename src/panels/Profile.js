@@ -57,7 +57,7 @@ import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок в версии vk.com и m.vk.com
 
-function Profile({ id, go, setPopout, executeReCaptcha, currentUser, user }) {
+function Profile({ id, setActivePanel, setPopout, executeReCaptcha, currentUser, user }) {
 	const [snackbar, setSnackbar] = useState(null)
 
 	useEffect(() => {
@@ -100,7 +100,7 @@ function Profile({ id, go, setPopout, executeReCaptcha, currentUser, user }) {
 
 	return (
 		<Panel id={id}>
-			<PanelHeader left={<PanelHeaderBack onClick={() => { go('home') }} />}><PanelHeaderContent>{user == null ? `Загрузка профиля` : `@${user.screen_name ? user.screen_name : `id${user.id}`}`}</PanelHeaderContent></PanelHeader>
+			<PanelHeader left={<PanelHeaderBack onClick={() => { setActivePanel('home') }} />}><PanelHeaderContent>{user == null ? `Загрузка профиля` : `@${user.screen_name ? user.screen_name : `id${user.id}`}`}</PanelHeaderContent></PanelHeader>
 
 			{user ? <UserProfile setPopout={setPopout} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={user} /> : null}
 
@@ -110,20 +110,20 @@ function Profile({ id, go, setPopout, executeReCaptcha, currentUser, user }) {
 }
 
 Profile.propTypes = {
-	id: PropTypes.string,
-	go: PropTypes.func,
-	setPopout: PropTypes.func,
-	executeReCaptcha: PropTypes.func,
+	id: PropTypes.string.isRequired,
+	setActivePanel: PropTypes.func.isRequired,
+	setPopout: PropTypes.func.isRequired,
+	executeReCaptcha: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
-		id: PropTypes.number,
-	}),
+		id: PropTypes.number.isRequired,
+	}).isRequired,
 	user: PropTypes.shape({
-		id: PropTypes.number,
-		screen_name: PropTypes.string,
-		first_name: PropTypes.string,
-		last_name: PropTypes.string,
-		photo_200: PropTypes.string,
-	})
+		id: PropTypes.number.isRequired,
+		screen_name: PropTypes.string.isRequired,
+		first_name: PropTypes.string.isRequired,
+		last_name: PropTypes.string.isRequired,
+		photo_200: PropTypes.string.isRequired,
+	}).isRequired
 }
 
 function UserProfileRichCell({ setPopout, setSnackbar, user }) {
@@ -205,15 +205,15 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 }
 
 UserProfileRichCell.propTypes = {
-	setPopout: PropTypes.func,
-	setSnackbar: PropTypes.func,
+	setPopout: PropTypes.func.isRequired,
+	setSnackbar: PropTypes.func.isRequired,
 	user: PropTypes.shape({
-		id: PropTypes.number,
-		screen_name: PropTypes.string,
-		first_name: PropTypes.string,
-		last_name: PropTypes.string,
-		photo_200: PropTypes.string,
-	})
+		id: PropTypes.number.isRequired,
+		screen_name: PropTypes.string.isRequired,
+		first_name: PropTypes.string.isRequired,
+		last_name: PropTypes.string.isRequired,
+		photo_200: PropTypes.string.isRequired,
+	}).isRequired
 }
 
 function RateButton({ imageSrc, code, chooseRate }) {
@@ -248,9 +248,9 @@ function RateButton({ imageSrc, code, chooseRate }) {
 }
 
 RateButton.propTypes = {
-	imageSrc: PropTypes.string,
-	code: PropTypes.string,
-	chooseRate: PropTypes.func,
+	imageSrc: PropTypes.string.isRequired,
+	code: PropTypes.string.isRequired,
+	chooseRate: PropTypes.func.isRequired,
 }
 
 function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
@@ -302,10 +302,10 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 }
 
 RatingButtons.propTypes = {
-	userid: PropTypes.number,
-	setSnackbar: PropTypes.func,
-	executeReCaptcha: PropTypes.func,
-	fetchRating: PropTypes.func,
+	userid: PropTypes.number.isRequired,
+	setSnackbar: PropTypes.func.isRequired,
+	executeReCaptcha: PropTypes.func.isRequired,
+	fetchRating: PropTypes.func.isRequired,
 }
 
 function RatingCardBar({ imageSrc, imageAlt, color, count, biggestCount }) {
@@ -353,11 +353,11 @@ function RatingCardBar({ imageSrc, imageAlt, color, count, biggestCount }) {
 }
 
 RatingCardBar.propTypes = {
-	imageSrc: PropTypes.string,
-	imageAlt: PropTypes.string,
-	color: PropTypes.string,
-	count: PropTypes.number,
-	biggestCount: PropTypes.number,
+	imageSrc: PropTypes.string.isRequired,
+	imageAlt: PropTypes.string.isRequired,
+	color: PropTypes.string.isRequired,
+	count: PropTypes.number.isRequired,
+	biggestCount: PropTypes.number.isRequired,
 }
 
 // ratingCounts - array
@@ -476,19 +476,19 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUser, us
 }
 
 UserProfile.propTypes = {
-	setPopout: PropTypes.func,
-	setSnackbar: PropTypes.func,
-	executeReCaptcha: PropTypes.func,
+	setPopout: PropTypes.func.isRequired,
+	setSnackbar: PropTypes.func.isRequired,
+	executeReCaptcha: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
-		id: PropTypes.number,
-	}),
+		id: PropTypes.number.isRequired,
+	}).isRequired,
 	user: PropTypes.shape({
-		id: PropTypes.number,
-		screen_name: PropTypes.string,
-		first_name: PropTypes.string,
-		last_name: PropTypes.string,
-		photo_200: PropTypes.string,
-	}),
+		id: PropTypes.number.isRequired,
+		screen_name: PropTypes.string.isRequired,
+		first_name: PropTypes.string.isRequired,
+		last_name: PropTypes.string.isRequired,
+		photo_200: PropTypes.string.isRequired,
+	}).isRequired,
 }
 
 export default Profile

@@ -17,6 +17,7 @@ import {
     View,
     Alert,
     Headline,
+    Text,
 } from '@vkontakte/vkui/'
 
 import Loading from './panels/Loading'
@@ -44,7 +45,6 @@ function App() {
 
     const reCaptchaRef = useRef()
     const [reCaptchaTheme, setReCaptchaTheme] = useState('light')
-    const [isReCaptchaLoaded, setIsReCaptchaLoaded] = useState(false)
 
     const [autoTheme, setAutoTheme] = useState('light')
     const [themeOption, setThemeOption] = useState(null)
@@ -67,6 +67,12 @@ function App() {
                 await bridge.send('VKWebAppInit')
             } catch (err) {
                 console.error(err)
+                setPopout(<Alert>
+                    <Headline>Произошла ошибка</Headline>
+                    <Text>Примите извинения, приложению не удалось загрузиться</Text>
+                </Alert>)
+
+                return
             }
 
             setIsVKWebAppInitDone(true)
@@ -186,6 +192,12 @@ function App() {
             }
         }
         fetchThingsFromStorage()
+    }, [isVKWebAppInitDone])
+
+    useEffect(() => {
+        if (!isVKWebAppInitDone || !isSlideshowDone) {
+            return
+        }
 
         const fetchUserInLocationHashAndCurrentUser = async () => {
             try {
@@ -199,7 +211,30 @@ function App() {
 
                 setCurrentUser(user)
             } catch (err) {
-                console.error(err)
+                if (err.error_data.error_code == 4) {
+                    setPopout(<Alert
+                        actions={[{
+                            title: 'Хорошо',
+                            autoclose: true,
+                        }]}
+                        onClose={() => {
+                            setPopout(null)
+
+                            fetchUserInLocationHashAndCurrentUser()
+                        }}
+                    >
+                        <Headline>Необходимо разрешение</Headline>
+                        <Text>Пожалуйста, предоставьте разрешение. Без него Sociorate не сможет работать.</Text>
+                    </Alert>)
+                } else {
+                    console.error(err)
+                    setPopout(<Alert>
+                        <Headline>Произошла ошибка</Headline>
+                        <Text>Примите извинения, приложению не удалось загрузиться</Text>
+                    </Alert>)
+                }
+
+                return
             }
 
             try {
@@ -231,33 +266,26 @@ function App() {
             }
         }
         fetchUserInLocationHashAndCurrentUser()
-    }, [isVKWebAppInitDone])
+    }, [isVKWebAppInitDone, isSlideshowDone])
 
-    const isAppLoaded = isReCaptchaLoaded && isVKWebAppInitDone && themeOption != null && currentUser != null && isSlideshowDone != null
+    const slideshowDoneCallback = useCallback(async () => {
+        setActivePanel('home')
+        setIsSlideshowDone(true)
 
-
-    const slideshowDoneCallback = useCallback(() => {
-        async () => {
-            setIsSlideshowDone(true)
-
-            try {
-                await bridge.send('VKWebAppStorageSet', { key: 'is_slideshow_done', value: String(true) })
-            } catch (err) {
-                console.error(err)
-            }
+        try {
+            await bridge.send('VKWebAppStorageSet', { key: 'is_slideshow_done', value: String(true) })
+        } catch (err) {
+            console.error(err)
         }
     }, [])
 
     return (
         <React.Fragment>
-            <ReCAPTCHA
+            {isSlideshowDone ? <ReCAPTCHA
                 ref={reCaptchaRef}
                 theme={reCaptchaTheme}
                 size="invisible"
                 sitekey="6LcWr9gZAAAAACPguyvAWhIkyvQG8Doml7zTPxX2"
-                asyncScriptOnLoad={() => {
-                    setIsReCaptchaLoaded(true)
-                }}
                 onChange={(value) => {
                     if (reCaptchaCallback != null) {
                         reCaptchaCallback(value, null, false)
@@ -273,9 +301,9 @@ function App() {
                         reCaptchaCallback(null, null, true)
                     }
                 }}
-            />
+            /> : null}
 
-            <View activePanel={isAppLoaded ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'} popout={popout}>
+            <View activePanel={themeOption != null && isSlideshowDone != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'} popout={popout}>
                 <Loading id='loading' />
 
                 <Slideshow id='slideshow' doneCallback={slideshowDoneCallback} />

@@ -390,7 +390,16 @@ function RatingCard({ ratingCounts }) {
 		setRatingCard(<Div>
 			<Group
 				separator='hide'
-				header={<Header mode='secondary'>Рейтинг</Header>}
+				header={<Header
+					mode='secondary'
+					style={{
+						'-webkit-user-select': 'none',
+						'-webkit-touch-callout': 'none',
+						'-moz-user-select': 'none',
+						'-ms-user-select': 'none',
+						'user-select': 'none',
+					}}
+				>Рейтинг</Header>}
 			>
 				<Card size='l'>
 					<Card size='l' mode='shadow'>

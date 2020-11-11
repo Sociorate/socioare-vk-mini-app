@@ -26,8 +26,6 @@ import {
 	Footer,
 	ActionSheet,
 	ActionSheetItem,
-	Card,
-	CardGrid,
 	RichCell,
 	Avatar,
 } from '@vkontakte/vkui'
@@ -257,66 +255,56 @@ function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) 
 			isFetching={isFetching}
 		>
 			<Group separator={false}>
-				<CardGrid>
-					<Card mode='outline' size="l">
-						<RichCell
-							style={{ borderRadius: 'inherit' }}
-							after={currentUserAverageRatingEmoji}
-							before={<Avatar size={56} src={currentUser.photo_200} />}
-							caption='Мой профиль'
-							onClick={async () => {
-								try {
-									setPanelProfileUser(currentUser)
-									setActivePanel('profile')
-								} catch (err) {
+				<RichCell
+					style={{ borderRadius: 'inherit' }}
+					after={currentUserAverageRatingEmoji}
+					before={<Avatar size={56} src={currentUser.photo_200} />}
+					caption='Мой профиль'
+					onClick={async () => {
+						try {
+							setPanelProfileUser(currentUser)
+							setActivePanel('profile')
+						} catch (err) {
+							console.error(err)
+							showErrorSnackbar(setSnackbar, 'Не удалось получить информацию о текущем профиле')
+						}
+					}}>{`${currentUser.first_name} ${currentUser.last_name}`}</RichCell>
+
+				{platformSwitch(['mobile_android', 'mobile_iphone'], () => (
+					<SimpleCell
+						style={{ borderRadius: 'inherit' }}
+						before={<Icon28QrCodeOutline />}
+						onClick={async () => {
+							try {
+								let code = (await bridge.send("VKWebAppOpenCodeReader")).code_data
+								loadUser(code)
+							} catch (err) {
+								if (err.error_data.error_code !== 4) {
 									console.error(err)
-									showErrorSnackbar(setSnackbar, 'Не удалось получить информацию о текущем профиле')
+									showErrorSnackbar(setSnackbar, 'Не удалось запустить сканер QR кода')
 								}
-							}}>{`${currentUser.first_name} ${currentUser.last_name}`}</RichCell>
-					</Card>
+							}
+						}}>Открыть по QR коду</SimpleCell>
+				))}
 
-					{platformSwitch(['mobile_android', 'mobile_iphone'], () => (
-						<Card mode='outline' size="l">
-							<SimpleCell
-								style={{ borderRadius: 'inherit' }}
-								before={<Icon28QrCodeOutline />}
-								onClick={async () => {
-									try {
-										let code = (await bridge.send("VKWebAppOpenCodeReader")).code_data
-										loadUser(code)
-									} catch (err) {
-										if (err.error_data.error_code !== 4) {
-											console.error(err)
-											showErrorSnackbar(setSnackbar, 'Не удалось запустить сканер QR кода')
-										}
-									}
-								}}>Открыть по QR коду</SimpleCell>
-						</Card>
-					))}
+				<SimpleCell
+					style={{ borderRadius: 'inherit' }}
+					before={<Icon28UserOutline />}
+					onClick={() => { setActivePanel('friends') }}>Выбрать из друзей</SimpleCell>
 
-					<Card mode='outline' size="l">
-						<SimpleCell
-							style={{ borderRadius: 'inherit' }}
-							before={<Icon28UserOutline />}
-							onClick={() => { setActivePanel('friends') }}>Выбрать из друзей</SimpleCell>
-					</Card>
+				<FormLayout>
+					<Input top='По @ID или ссылке ВК/Sociorate' value={userIDInput} onChange={(event) => {
+						setUserIDInput(event.target.value)
+					}} type='text' placeholder='Введите ID или ссылку' />
+					<Button size='xl' onClick={async () => {
+						if (userIDInput === '') {
+							showErrorSnackbar(setSnackbar, 'Введите ID или ссылку ВК/Sociorate.')
+							return
+						}
 
-					<Card mode='outline' size="l">
-						<FormLayout>
-							<Input top='По @ID или ссылке ВК/Sociorate' value={userIDInput} onChange={(event) => {
-								setUserIDInput(event.target.value)
-							}} type='text' placeholder='Введите ID или ссылку' />
-							<Button size='xl' onClick={async () => {
-								if (userIDInput === '') {
-									showErrorSnackbar(setSnackbar, 'Введите ID или ссылку ВК/Sociorate.')
-									return
-								}
-
-								loadUser(userIDInput)
-							}}>Открыть</Button>
-						</FormLayout>
-					</Card>
-				</CardGrid>
+						loadUser(userIDInput)
+					}}>Открыть</Button>
+				</FormLayout>
 			</Group>
 
 			<Group header={<Header mode='secondary'>Последние открытые</Header>}>

@@ -14,6 +14,7 @@ import React, {
 import ReactDOM from 'react-dom'
 
 import {
+    ConfigProvider,
     View,
     Alert,
     Headline,
@@ -37,25 +38,27 @@ var reCaptchaCallback = null
 function App() {
     const [isVKWebAppInitDone, setIsVKWebAppInitDone] = useState(false)
 
+    const [appScheme, setAppScheme] = useState('bright_light')
+
+    const [autoTheme, setAutoTheme] = useState('light')
+    const [themeOption, setThemeOption] = useState(null)
+
+    const reCaptchaRef = useRef()
+    const [reCaptchaTheme, setReCaptchaTheme] = useState('light')
+
+    const [isSlideshowDone, setIsSlideshowDone] = useState(null)
+
     const [activePanel, setActivePanel] = useState('loading')
     const [popout, setPopout] = useState(null)
 
     const [currentUser, setCurrentUser] = useState(null)
     const [panelProfileUser, setPanelProfileUser] = useState(null)
 
-    const reCaptchaRef = useRef()
-    const [reCaptchaTheme, setReCaptchaTheme] = useState('light')
-
-    const [autoTheme, setAutoTheme] = useState('light')
-    const [themeOption, setThemeOption] = useState(null)
-
-    const [isSlideshowDone, setIsSlideshowDone] = useState(null)
-
     useEffect(() => {
         const handler = ({ detail: { type, data } }) => {
             switch (type) {
                 case 'VKWebAppUpdateConfig':
-                    setAutoTheme(data.scheme === 'space_gray' ? 'dark' : 'light')
+                    setAutoTheme(data.scheme === 'space_gray' || data.scheme === 'client_dark' ? 'dark' : 'light')
                     break
             }
         }
@@ -123,17 +126,15 @@ function App() {
 
     useEffect(() => {
         const changeTheme = (themeName) => {
-            const schemeAttribute = document.createAttribute('scheme')
             switch (themeName) {
                 case 'dark':
-                    schemeAttribute.value = 'space_gray'
                     setReCaptchaTheme('dark')
+                    setAppScheme('space_gray')
                     break
                 default:
-                    schemeAttribute.value = 'client_light'
                     setReCaptchaTheme('light')
+                    setAppScheme('bright_light')
             }
-            document.body.attributes.setNamedItem(schemeAttribute)
         }
 
         if (themeOption === 'auto') {
@@ -303,15 +304,17 @@ function App() {
                 }}
             /> : null}
 
-            <View activePanel={themeOption != null && isSlideshowDone != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'} popout={popout}>
-                <Loading id='loading' />
+            <ConfigProvider isWebView={true} scheme={appScheme}>
+                <View activePanel={themeOption != null && isSlideshowDone != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'} popout={popout}>
+                    <Loading id='loading' />
 
-                <Slideshow id='slideshow' doneCallback={slideshowDoneCallback} />
+                    <Slideshow id='slideshow' doneCallback={slideshowDoneCallback} />
 
-                <Home id='home' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
-                <Friends id='friends' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} />
-                <Profile id='profile' setActivePanel={setActivePanel} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={panelProfileUser} />
-            </View>
+                    <Home id='home' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
+                    <Friends id='friends' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} />
+                    <Profile id='profile' setActivePanel={setActivePanel} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={panelProfileUser} />
+                </View>
+            </ConfigProvider>
         </React.Fragment>
     )
 }

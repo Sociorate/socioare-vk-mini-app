@@ -281,7 +281,13 @@ function App() {
     }, [])
 
     return (
-        <React.Fragment>
+        <div style={{
+            '-webkit-user-select': 'none',
+            '-webkit-touch-callout': 'none',
+            '-moz-user-select': 'none',
+            '-ms-user-select': 'none',
+            'user-select': 'none',
+        }}>
             {isSlideshowDone ? <ReCAPTCHA
                 ref={reCaptchaRef}
                 theme={reCaptchaTheme}
@@ -315,7 +321,7 @@ function App() {
                     <Profile id='profile' setActivePanel={setActivePanel} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={panelProfileUser} />
                 </View>
             </ConfigProvider>
-        </React.Fragment>
+        </div>
     )
 }
 

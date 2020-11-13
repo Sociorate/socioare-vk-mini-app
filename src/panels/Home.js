@@ -314,7 +314,7 @@ function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) 
 					'-webkit-touch-callout': 'none',
 					'-moz-user-select': 'none',
 					'-ms-user-select': 'none',
-					'user-select': 'none',
+					userSelect: 'none',
 				}}
 			>Последние открытые</Header>}>
 				{lastProfilesView}

@@ -11,7 +11,7 @@ function createAverageRating(ratingCounts) {
     let averageRatingEmoji = null
 
     if (allCount >= 3) {
-        averageRating = (5 * ratingCounts[4] + 4 * ratingCounts[3] + 3 * ratingCounts[2] + 2 * ratingCounts[1] + ratingCounts[0]) / allCount
+        averageRating = (5 * ratingCounts[4] + 4 * ratingCounts[3] + 3 * ratingCounts[2] + 2 * ratingCounts[1] + 1 * ratingCounts[0]) / allCount
 
         // Hate:    1.0 - 1.8
         // Dislike: 1.8 - 2.6
@@ -19,15 +19,15 @@ function createAverageRating(ratingCounts) {
         // Like:    3.4 - 4.2
         // Love:    4.2 - 5.0
 
-        if (averageRating > 1.0 && averageRating < 1.8) {
+        if (averageRating <= 1.8) {
             averageRatingEmoji = HateEmoji
-        } else if (averageRating > 1.8 && averageRating < 2.6) {
+        } else if (averageRating <= 2.6) {
             averageRatingEmoji = DislikeEmoji
-        } else if (averageRating > 2.6 && averageRating < 3.4) {
+        } else if (averageRating <= 3.4) {
             averageRatingEmoji = NeutralEmoji
-        } else if (averageRating > 3.4 && averageRating < 4.2) {
+        } else if (averageRating <= 4.2) {
             averageRatingEmoji = LikeEmoji
-        } else if (averageRating > 4.2 && averageRating < 5.0) {
+        } else if (averageRating <= 5.0) {
             averageRatingEmoji = LoveEmoji
         }
     }

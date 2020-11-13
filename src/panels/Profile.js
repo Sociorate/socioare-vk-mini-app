@@ -397,7 +397,7 @@ function RatingCard({ ratingCounts }) {
 						'-webkit-touch-callout': 'none',
 						'-moz-user-select': 'none',
 						'-ms-user-select': 'none',
-						'user-select': 'none',
+						userSelect: 'none',
 					}}
 				>Рейтинг</Header>}
 			>

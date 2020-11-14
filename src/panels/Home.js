@@ -131,7 +131,7 @@ Home.propTypes = {
 function LastViewedProfilesPlaceholder() {
 	return (
 		<Placeholder
-			header="Оценивайте людей"
+			header="Оценивайте"
 			icon={<Icon56HistoryOutline />}
 		>Последние открытые профили будут отображаться здесь</Placeholder>
 	)

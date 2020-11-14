@@ -57,7 +57,7 @@ import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок в версии vk.com и m.vk.com
 
-function Profile({ id, setActivePanel, setPopout, executeReCaptcha, currentUser, user }) {
+function Profile({ id, setPopout, executeReCaptcha, currentUser, user }) {
 	if (currentUser == null) {
 		return <Panel id={id} />
 	}
@@ -74,6 +74,8 @@ function Profile({ id, setActivePanel, setPopout, executeReCaptcha, currentUser,
 				await bridge.send('VKWebAppSetLocation', { location: `@${user.screen_name ? user.screen_name : `id${user.id}`}` })
 			} catch (err) {
 				console.error(err)
+			} finally {
+				window.history.pushState({ panelid: 'profile', user: user }, `@${user.screen_name ? user.screen_name : `id${user.id}`}`)
 			}
 		}
 		setLocation()
@@ -104,7 +106,11 @@ function Profile({ id, setActivePanel, setPopout, executeReCaptcha, currentUser,
 
 	return (
 		<Panel id={id}>
-			<PanelHeader left={<PanelHeaderBack onClick={() => { setActivePanel('home') }} />}><PanelHeaderContent>{user == null ? `Загрузка профиля` : `@${user.screen_name ? user.screen_name : `id${user.id}`}`}</PanelHeaderContent></PanelHeader>
+			<PanelHeader
+				left={<PanelHeaderBack onClick={() => { window.history.back() }} />}
+			>
+				<PanelHeaderContent>{user == null ? `Загрузка профиля` : `@${user.screen_name ? user.screen_name : `id${user.id}`} `}</PanelHeaderContent>
+			</PanelHeader>
 
 			{user ? <UserProfile setPopout={setPopout} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={user} /> : null}
 
@@ -115,7 +121,6 @@ function Profile({ id, setActivePanel, setPopout, executeReCaptcha, currentUser,
 
 Profile.propTypes = {
 	id: PropTypes.string.isRequired,
-	setActivePanel: PropTypes.func.isRequired,
 	setPopout: PropTypes.func.isRequired,
 	executeReCaptcha: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
@@ -140,7 +145,7 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 					<Button mode='tertiary' stretched
 						href={`https://vk.com/${user.screen_name ? user.screen_name : `id${user.id}`}`}
 						target='_blank'
-					><Icon24Link /></Button>
+					> <Icon24Link /></Button >
 					<Button mode='tertiary' stretched onClick={async () => {
 						try {
 							await bridge.send('VKWebAppShare', { link: `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}` })
@@ -200,11 +205,11 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 							</Alert>
 						)
 					}}><Icon24Qr /></Button>
-				</div>
+				</div >
 			}
 		>
 			<Title level="2" weight="regular">{`${user.first_name} ${user.last_name}`}</Title>
-		</RichCell>
+		</RichCell >
 	)
 }
 

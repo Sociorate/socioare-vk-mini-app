@@ -31,7 +31,7 @@ import bridge from '@vkontakte/vk-bridge'
 
 import ReCAPTCHA from "react-google-recaptcha"
 
-// TODO: роутинг (можно только чтоб кнопка назад работала на андройдах (и свайп на ios по совместительству))
+// TODO: роутинг
 
 var reCaptchaCallback = null
 
@@ -55,6 +55,22 @@ function App() {
     const [panelProfileUser, setPanelProfileUser] = useState(null)
 
     useEffect(() => {
+        window.onpopstate = (event) => {
+            if (event.state != null) {
+                // TODO: роутинг
+                // if (event.state.user) {
+                //     setPanelProfileUser(event.state.user)
+                // }
+                // if (event.state.panelid) {
+                //     setActivePanel(event.state.panelid)
+                // }
+            } else {
+                // SHITFIX
+                window.history.pushState(null, 'Домашняя страница')
+                setActivePanel('home')
+            }
+        }
+
         const handler = ({ detail: { type, data } }) => {
             switch (type) {
                 case 'VKWebAppUpdateConfig':
@@ -304,15 +320,22 @@ function App() {
                 }}
             /> : null}
 
-            <ConfigProvider isWebView={true} scheme={appScheme}>
-                <View activePanel={themeOption != null && isSlideshowDone != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'} popout={popout}>
+            <ConfigProvider
+                isWebView={true}
+                scheme={appScheme}
+            >
+                <View
+                    activePanel={themeOption != null && isSlideshowDone != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'}
+                    popout={popout}
+                    onSwipeBack={() => { window.history.back() }}
+                >
                     <Loading id='loading' />
 
                     <Slideshow id='slideshow' doneCallback={slideshowDoneCallback} />
 
                     <Home id='home' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
                     <Friends id='friends' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} />
-                    <Profile id='profile' setActivePanel={setActivePanel} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={panelProfileUser} />
+                    <Profile id='profile' setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={panelProfileUser} />
                 </View>
             </ConfigProvider>
         </React.Fragment>

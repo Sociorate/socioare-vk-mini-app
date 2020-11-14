@@ -78,12 +78,7 @@ function Profile({ id, setAppHistory, setPopout, executeReCaptcha, currentUser, 
 				console.error(err)
 			} finally {
 				setAppHistory(['home', 'profile'])
-
-				if (currentPlatform == 'desktop_web') {
-					window.history.replaceState(null, { panelid: 'profile', user: user }, `@${user.screen_name ? user.screen_name : `id${user.id}`}`)
-				} else {
-					window.history.pushState({ panelid: 'profile', user: user }, `@${user.screen_name ? user.screen_name : `id${user.id}`}`)
-				}
+				window.history.pushState({ panelid: 'profile', panelProfileUser: user }, `@${user.screen_name ? user.screen_name : `id${user.id}`}`)
 			}
 		}
 		setLocation()

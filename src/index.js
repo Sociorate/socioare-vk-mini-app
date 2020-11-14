@@ -31,8 +31,6 @@ import bridge from '@vkontakte/vk-bridge'
 
 import ReCAPTCHA from "react-google-recaptcha"
 
-// TODO: роутинг
-
 var reCaptchaCallback = null
 
 function App() {
@@ -59,8 +57,8 @@ function App() {
         window.onpopstate = (event) => {
             if (event.state != null) {
                 // TODO: роутинг
-                // if (event.state.user) {
-                //     setPanelProfileUser(event.state.user)
+                // if (event.state.panelProfileUser) {
+                //     setPanelProfileUser(event.state.panelProfileUser)
                 // }
                 // if (event.state.panelid) {
                 //     setActivePanel(event.state.panelid)

@@ -273,6 +273,8 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 				} catch (err) {
 					if (err.code === 98765) {
 						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно 9 раз за 24 часа")
+					} else if (err.code === 4321) {
+						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать одного человека можно 2 раза за 24 часа")
 					} else {
 						console.error(err)
 						showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')

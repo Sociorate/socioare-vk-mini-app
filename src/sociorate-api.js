@@ -1,4 +1,4 @@
-const endpoint = (process.env.NODE_ENV === 'development' ? 'http://localhost' : 'https://api.sociorate.ru')
+const endpoint = (process.env.NODE_ENV === 'development' ? 'https://localhost' : 'https://api.sociorate.ru')
 const urlParams = (() => {
     let params = new URLSearchParams(window.location.search)
 

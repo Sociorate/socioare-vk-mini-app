@@ -39,6 +39,7 @@ function App() {
     const [isVKWebAppInitDone, setIsVKWebAppInitDone] = useState(false)
 
     const [appScheme, setAppScheme] = useState('bright_light')
+    const [appHistory, setAppHistory] = useState(['home'])
 
     const [autoTheme, setAutoTheme] = useState('light')
     const [themeOption, setThemeOption] = useState(null)
@@ -65,8 +66,7 @@ function App() {
                 //     setActivePanel(event.state.panelid)
                 // }
             } else {
-                // SHITFIX
-                window.history.pushState(null, 'Домашняя страница')
+                setAppHistory(['home'])
                 setActivePanel('home')
             }
         }
@@ -327,6 +327,7 @@ function App() {
                 <View
                     activePanel={themeOption != null && isSlideshowDone != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'}
                     popout={popout}
+                    history={appHistory}
                     onSwipeBack={() => { window.history.back() }}
                 >
                     <Loading id='loading' />
@@ -335,7 +336,7 @@ function App() {
 
                     <Home id='home' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
                     <Friends id='friends' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} />
-                    <Profile id='profile' setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={panelProfileUser} />
+                    <Profile id='profile' setAppHistory={setAppHistory} setPopout={setPopout} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={panelProfileUser} />
                 </View>
             </ConfigProvider>
         </React.Fragment>

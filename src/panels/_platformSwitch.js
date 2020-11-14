@@ -14,4 +14,7 @@ function platformSwitch(platforms, callback) {
     return null
 }
 
-export default platformSwitch
+export {
+    platformSwitch,
+    currentPlatform,
+}

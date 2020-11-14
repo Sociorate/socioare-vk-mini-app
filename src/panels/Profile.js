@@ -40,6 +40,8 @@ import {
 	getRating,
 } from '../sociorate-api'
 
+import { currentPlatform } from './_platformSwitch'
+
 import vkQr from '@vkontakte/vk-qr'
 
 import {
@@ -57,7 +59,7 @@ import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок в версии vk.com и m.vk.com
 
-function Profile({ id, setPopout, executeReCaptcha, currentUser, user }) {
+function Profile({ id, setAppHistory, setPopout, executeReCaptcha, currentUser, user }) {
 	if (currentUser == null) {
 		return <Panel id={id} />
 	}
@@ -75,7 +77,13 @@ function Profile({ id, setPopout, executeReCaptcha, currentUser, user }) {
 			} catch (err) {
 				console.error(err)
 			} finally {
-				window.history.pushState({ panelid: 'profile', user: user }, `@${user.screen_name ? user.screen_name : `id${user.id}`}`)
+				setAppHistory(['home', 'profile'])
+
+				if (currentPlatform == 'desktop_web') {
+					window.history.replaceState(null, { panelid: 'profile', user: user }, `@${user.screen_name ? user.screen_name : `id${user.id}`}`)
+				} else {
+					window.history.pushState({ panelid: 'profile', user: user }, `@${user.screen_name ? user.screen_name : `id${user.id}`}`)
+				}
 			}
 		}
 		setLocation()
@@ -121,6 +129,7 @@ function Profile({ id, setPopout, executeReCaptcha, currentUser, user }) {
 
 Profile.propTypes = {
 	id: PropTypes.string.isRequired,
+	setAppHistory: PropTypes.func.isRequired,
 	setPopout: PropTypes.func.isRequired,
 	executeReCaptcha: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({

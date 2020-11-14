@@ -59,7 +59,7 @@ import createAverageRating from './_createAverageRating'
 
 import UsersList from './_UsersList'
 
-import platformSwitch from './_platformSwitch'
+import { platformSwitch } from './_platformSwitch'
 
 // TODO: сделать вкладки сменяемыми свайпами
 

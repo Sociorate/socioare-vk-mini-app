@@ -40,6 +40,10 @@ import {
 	getRating,
 } from '../sociorate-api'
 
+import {
+	currentPlatform,
+} from './_platformSwitch.js'
+
 import vkQr from '@vkontakte/vk-qr'
 
 import {
@@ -57,7 +61,7 @@ import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок в версии vk.com и m.vk.com
 
-function Profile({ id, setAppHistory, setPopout, executeReCaptcha, currentUser, user }) {
+function Profile({ id, setActivePanel, setAppHistory, setPopout, executeReCaptcha, currentUser, user }) {
 	if (currentUser == null) {
 		return <Panel id={id} />
 	}
@@ -76,7 +80,9 @@ function Profile({ id, setAppHistory, setPopout, executeReCaptcha, currentUser, 
 				console.error(err)
 			} finally {
 				setAppHistory(['home', 'profile'])
-				window.history.pushState({ panelid: 'profile', panelProfileUser: user }, `@${user.screen_name ? user.screen_name : `id${user.id}`}`)
+				if (currentPlatform != 'desktop_web') {
+					window.history.pushState({ panelid: 'profile', panelProfileUser: user }, `@${user.screen_name ? user.screen_name : `id${user.id}`}`)
+				}
 			}
 		}
 		setLocation()
@@ -108,7 +114,7 @@ function Profile({ id, setAppHistory, setPopout, executeReCaptcha, currentUser, 
 	return (
 		<Panel id={id}>
 			<PanelHeader
-				left={<PanelHeaderBack onClick={() => { window.history.back() }} />}
+				left={<PanelHeaderBack onClick={currentPlatform != 'desktop_web' ? () => { window.history.back() } : () => { setActivePanel('home') }} />}
 			>
 				<PanelHeaderContent>{user == null ? `Загрузка профиля` : `@${user.screen_name ? user.screen_name : `id${user.id}`} `}</PanelHeaderContent>
 			</PanelHeader>
@@ -122,6 +128,7 @@ function Profile({ id, setAppHistory, setPopout, executeReCaptcha, currentUser, 
 
 Profile.propTypes = {
 	id: PropTypes.string.isRequired,
+	setActivePanel: PropTypes.func.isRequired,
 	setAppHistory: PropTypes.func.isRequired,
 	setPopout: PropTypes.func.isRequired,
 	executeReCaptcha: PropTypes.func.isRequired,
@@ -272,9 +279,9 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 					await postRating(userid, rate, token)
 				} catch (err) {
 					if (err.code === 98765) {
-						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно 9 раз за 24 часа")
+						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно 9 раз в 24 часа")
 					} else if (err.code === 4321) {
-						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать одного человека можно 2 раза за 24 часа")
+						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать одного человека можно 2 раза в 24 часа")
 					} else {
 						console.error(err)
 						showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')

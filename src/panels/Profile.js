@@ -40,8 +40,6 @@ import {
 	getRating,
 } from '../sociorate-api'
 
-import { currentPlatform } from './_platformSwitch'
-
 import vkQr from '@vkontakte/vk-qr'
 
 import {

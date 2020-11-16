@@ -61,7 +61,7 @@ import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок в версии vk.com и m.vk.com
 
-function Profile({ id, setActivePanel, setAppHistory, setPopout, executeReCaptcha, currentUser, user }) {
+function Profile({ id, setActivePanel, setAppHistory, setPopout, currentUser, user }) {
 	if (currentUser == null) {
 		return <Panel id={id} />
 	}
@@ -119,7 +119,7 @@ function Profile({ id, setActivePanel, setAppHistory, setPopout, executeReCaptch
 				<PanelHeaderContent>{user == null ? `Загрузка профиля` : `@${user.screen_name ? user.screen_name : `id${user.id}`} `}</PanelHeaderContent>
 			</PanelHeader>
 
-			{user ? <UserProfile setPopout={setPopout} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} currentUser={currentUser} user={user} /> : null}
+			{user ? <UserProfile setPopout={setPopout} setSnackbar={setSnackbar} currentUser={currentUser} user={user} /> : null}
 
 			{snackbar}
 		</Panel>
@@ -131,7 +131,6 @@ Profile.propTypes = {
 	setActivePanel: PropTypes.func.isRequired,
 	setAppHistory: PropTypes.func.isRequired,
 	setPopout: PropTypes.func.isRequired,
-	executeReCaptcha: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
 		id: PropTypes.number.isRequired,
 	}),
@@ -234,7 +233,7 @@ UserProfileRichCell.propTypes = {
 	}).isRequired
 }
 
-function RateButton({ imageSrc, code, chooseRate }) {
+function RateButton({ imageSrc, code, sendRate }) {
 	return (
 		<Button
 			style={{
@@ -248,7 +247,7 @@ function RateButton({ imageSrc, code, chooseRate }) {
 			}}
 			mode='tertiary'
 			onClick={() => {
-				chooseRate(code)
+				sendRate(code)
 			}}
 		>
 			<img style={{
@@ -268,34 +267,27 @@ function RateButton({ imageSrc, code, chooseRate }) {
 RateButton.propTypes = {
 	imageSrc: PropTypes.string.isRequired,
 	code: PropTypes.string.isRequired,
-	chooseRate: PropTypes.func.isRequired,
+	sendRate: PropTypes.func.isRequired,
 }
 
-function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
-	const chooseRate = useCallback((rate) => {
-		executeReCaptcha(async (token, error) => {
-			if (token) {
-				try {
-					await postRating(userid, rate, token)
-				} catch (err) {
-					if (err.code === 98765) {
-						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно 9 раз в 24 часа")
-					} else if (err.code === 4321) {
-						showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать одного человека можно 2 раза в 24 часа")
-					} else {
-						console.error(err)
-						showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
-					}
-					return
-				}
-
-				showSuccessSnackbar(setSnackbar, 'Спасибо за вашу оценку!')
-				fetchRating()
-			} else if (error) {
-				console.error(error)
-				showErrorSnackbar(setSnackbar, 'Не выполнить проверку ReCAPTCHA')
+function RatingButtons({ userid, setSnackbar, fetchRating }) {
+	const sendRate = useCallback(async (rate) => {
+		try {
+			await postRating(userid, rate)
+		} catch (err) {
+			if (err.code === 98765) {
+				showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно 9 раз в 24 часа")
+			} else if (err.code === 4321) {
+				showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать одного человека можно 2 раза в 24 часа")
+			} else {
+				console.error(err)
+				showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
 			}
-		})
+			return
+		}
+
+		showSuccessSnackbar(setSnackbar, 'Спасибо за вашу оценку!')
+		fetchRating()
 	}, [userid])
 
 	return (
@@ -307,11 +299,11 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 				height: '64px',
 				marginTop: '8px',
 			}}>
-				<RateButton imageSrc={HateEmoji} code='1' chooseRate={chooseRate} />
-				<RateButton imageSrc={DislikeEmoji} code='2' chooseRate={chooseRate} />
-				<RateButton imageSrc={NeutralEmoji} code='3' chooseRate={chooseRate} />
-				<RateButton imageSrc={LikeEmoji} code='4' chooseRate={chooseRate} />
-				<RateButton imageSrc={LoveEmoji} code='5' chooseRate={chooseRate} />
+				<RateButton imageSrc={HateEmoji} code='1' sendRate={sendRate} />
+				<RateButton imageSrc={DislikeEmoji} code='2' sendRate={sendRate} />
+				<RateButton imageSrc={NeutralEmoji} code='3' sendRate={sendRate} />
+				<RateButton imageSrc={LikeEmoji} code='4' sendRate={sendRate} />
+				<RateButton imageSrc={LoveEmoji} code='5' sendRate={sendRate} />
 			</Div>
 
 			<Footer style={{
@@ -324,7 +316,6 @@ function RatingButtons({ userid, setSnackbar, executeReCaptcha, fetchRating }) {
 RatingButtons.propTypes = {
 	userid: PropTypes.number.isRequired,
 	setSnackbar: PropTypes.func.isRequired,
-	executeReCaptcha: PropTypes.func.isRequired,
 	fetchRating: PropTypes.func.isRequired,
 }
 
@@ -440,7 +431,7 @@ function RatingCard({ ratingCounts }) {
 	return ratingCard
 }
 
-function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUser, user }) {
+function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 	const [isFetching, setIsFetching] = useState(false)
 	const [ratingCounts, setRatingCounts] = useState(null)
 
@@ -495,7 +486,7 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUser, us
 		>
 			<UserProfileRichCell setPopout={setPopout} setSnackbar={setSnackbar} user={user} />
 
-			{currentUser.id !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} executeReCaptcha={executeReCaptcha} fetchRating={fetchRating} /> : null}
+			{currentUser.id !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} fetchRating={fetchRating} /> : null}
 
 			{promoBanner}
 
@@ -507,7 +498,6 @@ function UserProfile({ setPopout, setSnackbar, executeReCaptcha, currentUser, us
 UserProfile.propTypes = {
 	setPopout: PropTypes.func.isRequired,
 	setSnackbar: PropTypes.func.isRequired,
-	executeReCaptcha: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
 		id: PropTypes.number.isRequired,
 	}).isRequired,

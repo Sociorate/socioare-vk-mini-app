@@ -36,11 +36,11 @@ function newApiRequest(method, data) {
             if (response.error) {
                 reject(response.error)
             } else if (response.data) {
-                resolve(response.data)
+                resolve(response.response)
             } else {
                 reject({
                     code: 666,
-                    description: "No data field"
+                    description: "No `response` field"
                 })
             }
         }
@@ -54,11 +54,10 @@ function newApiRequest(method, data) {
     })
 }
 
-function postRating(userid, rate, reCaptchaToken) {
+function postRating(userid, rate) {
     return newApiRequest('/post_rating', JSON.stringify({
         vk_user_id: Number(userid),
         rate: Number(rate),
-        recaptcha_token: String(reCaptchaToken),
         url_params: {
             params: String(urlParams),
             sign: String(urlPramsSign),
@@ -72,7 +71,18 @@ function getRating(userid) {
     }))
 }
 
+function vkUsersGet(userids) {
+    return newApiRequest('/vk_users_get', JSON.stringify({
+        user_ids: String(userids),
+        url_params: {
+            params: String(urlParams),
+            sign: String(urlPramsSign),
+        },
+    }))
+}
+
 export {
     postRating,
     getRating,
+    vkUsersGet,
 }

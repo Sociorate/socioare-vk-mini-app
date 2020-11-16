@@ -48,6 +48,7 @@ import bridge from '@vkontakte/vk-bridge'
 
 import {
 	getRating,
+	vkUsersGet,
 } from '../sociorate-api'
 
 import {
@@ -168,25 +169,24 @@ function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) 
 	const fetchLastViewedProfiles = useCallback(async () => {
 		setLastProfilesView(<PanelSpinner />)
 
-		let data = ''
+		let userids = ''
 
 		try {
-			data = String((await bridge.send('VKWebAppStorageGet', { keys: ['last_viewed_profiles'] })).keys[0].value)
+			userids = String((await bridge.send('VKWebAppStorageGet', { keys: ['last_viewed_profiles'] })).keys[0].value)
 		} catch (err) {
 			console.error(err)
 			showErrorSnackbar(setSnackbar, 'Не удалось загрузить последние открытые профили')
 		}
 
-		if (data === '') {
-			setLastProfilesView(LastViewedProfilesPlaceholder())
+		if (userids === '') {
+			setLastProfilesView(<LastViewedProfilesPlaceholder />)
 			return
 		}
 
 		let users = []
 
 		try {
-			let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
-			users = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: data, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response
+			users = await vkUsersGet(userids)
 		} catch (err) {
 			if (err.error_data.error_code !== 1) {
 				console.error(err)
@@ -194,8 +194,8 @@ function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) 
 			}
 		}
 
-		if (users.length === 0) {
-			setLastProfilesView(LastViewedProfilesPlaceholder())
+		if (!users || users.length === 0) {
+			setLastProfilesView(<LastViewedProfilesPlaceholder />)
 			return
 		}
 
@@ -216,9 +216,7 @@ function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) 
 
 			let userid = stringWithUserID.substring(index + 1)
 
-			let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
-			let user = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: userid, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response[0]
-
+			let user = (await vkUsersGet(userid))[0]
 			if (!user) {
 				showErrorSnackbar(setSnackbar, 'Пользователь не найден')
 				return

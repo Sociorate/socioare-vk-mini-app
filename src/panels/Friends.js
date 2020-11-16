@@ -24,6 +24,10 @@ import {
     showErrorSnackbar,
 } from './_showSnackbar'
 
+import {
+    vkUsersGet,
+} from './sociorate-api'
+
 import UsersList from './_UsersList'
 
 import bridge from '@vkontakte/vk-bridge'
@@ -62,9 +66,7 @@ function Friends({ id, setActivePanel, setPanelProfileUser }) {
             if (friend != null) {
                 let fetchedFriend = null
                 try {
-                    let accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: '' })
-                    let users = (await bridge.send('VKWebAppCallAPIMethod', { method: 'users.get', params: { user_ids: friend.id, fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response
-                    fetchedFriend = users[0]
+                    fetchedFriend = (await vkUsersGet(friend.id))[0]
                 } catch (err) {
                     console.error(err)
                 }

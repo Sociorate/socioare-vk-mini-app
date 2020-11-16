@@ -170,8 +170,7 @@ function App() {
             if (isSlideshowDoneData == null) {
                 setIsSlideshowDone(false)
             } else {
-                // setIsSlideshowDone(Boolean(isSlideshowDoneData))
-                setIsSlideshowDone(false)
+                setIsSlideshowDone(Boolean(isSlideshowDoneData))
             }
         }
         fetchThingsFromStorage()

@@ -26,7 +26,7 @@ import {
 
 import {
     vkUsersGet,
-} from './sociorate-api'
+} from '../sociorate-api'
 
 import UsersList from './_UsersList'
 

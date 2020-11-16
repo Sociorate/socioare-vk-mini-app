@@ -1,10 +1,11 @@
-const endpoint = (process.env.NODE_ENV === 'development' ? 'https://localhost' : 'https://api.sociorate.ru')
-const urlParams = (() => {
-    let params = new URLSearchParams(window.location.search)
+const endpoint = (process.env.NODE_ENV !== 'development' ? 'https://localhost' : 'https://api.sociorate.ru')
 
+const urlParams = new URLSearchParams(window.location.search)
+
+const urlParamsOrderedString = (() => {
     let orderedParams = new URLSearchParams()
 
-    for (let [key, value] of params.entries()) {
+    for (let [key, value] of urlParams.entries()) {
         if (key.substring(0, 3) === 'vk_') {
             orderedParams.set(key, value)
         }
@@ -12,7 +13,9 @@ const urlParams = (() => {
 
     return orderedParams.toString()
 })()
-const urlPramsSign = new URLSearchParams(window.location.search).get('sign')
+
+const urlPramsSign = urlParams.get('sign')
+const vkLanguage = urlParams.get('vk_language')
 
 function newApiRequest(method, data) {
     let xhr = new XMLHttpRequest()
@@ -33,9 +36,11 @@ function newApiRequest(method, data) {
                 })
             }
 
+            console.log(response)
+
             if (response.error) {
                 reject(response.error)
-            } else if (response.data) {
+            } else if (response.response) {
                 resolve(response.response)
             } else {
                 reject({
@@ -59,7 +64,7 @@ function postRating(userid, rate) {
         vk_user_id: Number(userid),
         rate: Number(rate),
         url_params: {
-            params: String(urlParams),
+            params: String(urlParamsOrderedString),
             sign: String(urlPramsSign),
         },
     }))
@@ -74,8 +79,9 @@ function getRating(userid) {
 function vkUsersGet(userids) {
     return newApiRequest('/vk_users_get', JSON.stringify({
         user_ids: String(userids),
+        lang: String(vkLanguage),
         url_params: {
-            params: String(urlParams),
+            params: String(urlParamsOrderedString),
             sign: String(urlPramsSign),
         },
     }))

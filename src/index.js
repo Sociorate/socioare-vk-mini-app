@@ -155,7 +155,7 @@ function App() {
             }
 
             if (themeOptionData == null) {
-                setThemeOption('ligth')
+                setThemeOption('auto')
             } else {
                 setThemeOption(String(themeOptionData))
             }
@@ -184,28 +184,11 @@ function App() {
 
                 setCurrentUser(user)
             } catch (err) {
-                if (err.error_data.error_code == 4) {
-                    setPopout(<Alert
-                        actions={[{
-                            title: 'Хорошо',
-                            autoclose: true,
-                        }]}
-                        onClose={() => {
-                            setPopout(null)
-
-                            fetchUserInLocationHashAndCurrentUser()
-                        }}
-                    >
-                        <Headline>Необходимо разрешение</Headline>
-                        <Text>Пожалуйста, предоставьте разрешение. Без него Sociorate не сможет работать.</Text>
-                    </Alert>)
-                } else {
-                    console.error(err)
-                    setPopout(<Alert>
-                        <Headline>Произошла ошибка</Headline>
-                        <Text>Примите извинения, приложению не удалось загрузиться</Text>
-                    </Alert>)
-                }
+                console.error(err)
+                setPopout(<Alert>
+                    <Headline>Произошла ошибка</Headline>
+                    <Text>Примите извинения, приложению не удалось загрузиться</Text>
+                </Alert>)
 
                 return
             }

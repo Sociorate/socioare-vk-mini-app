@@ -188,7 +188,7 @@ function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) 
 		try {
 			users = await vkUsersGet(userids)
 		} catch (err) {
-			if (err.error_data.error_code !== 1) {
+			if (err.error_code !== 113) {
 				console.error(err)
 				showErrorSnackbar(setSnackbar, 'Не удалось загрузить последние открытые профили')
 			}
@@ -225,7 +225,7 @@ function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) 
 			setPanelProfileUser(user)
 			setActivePanel('profile')
 		} catch (err) {
-			if (err.error_data.error_code === 1) {
+			if (err.error_code === 113) {
 				showErrorSnackbar(setSnackbar, 'Пользователь не найден')
 			} else {
 				console.error(err)

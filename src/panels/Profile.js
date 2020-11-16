@@ -275,9 +275,9 @@ function RatingButtons({ userid, setSnackbar, fetchRating }) {
 		try {
 			await postRating(userid, rate)
 		} catch (err) {
-			if (err.code === 98765) {
+			if (err.error_code === 98765) {
 				showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно 9 раз в 24 часа")
-			} else if (err.code === 4321) {
+			} else if (err.error_code === 4321) {
 				showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать одного человека можно 2 раза в 24 часа")
 			} else {
 				console.error(err)

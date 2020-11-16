@@ -84,10 +84,21 @@ function App() {
                 await bridge.send('VKWebAppInit')
             } catch (err) {
                 console.error(err)
-                setPopout(<Alert>
-                    <Headline>Произошла ошибка</Headline>
-                    <Text>Примите извинения, приложению не удалось загрузиться</Text>
-                </Alert>)
+                setPopout(
+                    <Alert
+                        onClose={() => {
+                            setPopout(null)
+                            vkWebAppInit()
+                        }}
+                        actions={[{
+                            title: 'Повторить попытку',
+                            autoclose: true,
+                        }]}
+                    >
+                        <Headline>Произошла ошибка</Headline>
+                        <Text>Примите извинения, приложению не удалось загрузиться</Text>
+                    </Alert>
+                )
 
                 return
             }
@@ -185,10 +196,21 @@ function App() {
                 setCurrentUser(user)
             } catch (err) {
                 console.error(err)
-                setPopout(<Alert>
-                    <Headline>Произошла ошибка</Headline>
-                    <Text>Примите извинения, приложению не удалось загрузиться</Text>
-                </Alert>)
+                setPopout(
+                    <Alert
+                        onClose={() => {
+                            setPopout(null)
+                            fetchUserInLocationHashAndCurrentUser()
+                        }}
+                        actions={[{
+                            title: 'Повторить попытку',
+                            autoclose: true,
+                        }]}
+                    >
+                        <Headline>Произошла ошибка</Headline>
+                        <Text>Примите извинения, приложению не удалось загрузиться</Text>
+                    </Alert>
+                )
 
                 return
             }

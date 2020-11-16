@@ -314,6 +314,18 @@ function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) 
 					'-ms-user-select': 'none',
 					userSelect: 'none',
 				}}
+				aside={<Button
+					mode="tertiary"
+					onClick={async () => {
+						try {
+							await bridge.send('VKWebAppStorageSet', { key: 'last_viewed_profiles', value: "" })
+							setLastProfilesView(<LastViewedProfilesPlaceholder />)
+						} catch (err) {
+							console.error(err)
+							showErrorSnackbar(setSnackbar, "Не удалось очистить список последних открытых профилей")
+						}
+					}}
+				>Очистить</Button>}
 			>Последние открытые</Header>}>
 				{lastProfilesView}
 			</Group>

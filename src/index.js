@@ -40,7 +40,7 @@ function App() {
     const [isVKWebAppInitDone, setIsVKWebAppInitDone] = useState(false)
 
     const [appScheme, setAppScheme] = useState('bright_light')
-    const [appHistory, setAppHistory] = useState(['home'])
+    const [appViewHistory, setAppViewHistory] = useState(['home'])
 
     const [autoTheme, setAutoTheme] = useState('light')
     const [themeOption, setThemeOption] = useState(null)
@@ -64,7 +64,7 @@ function App() {
                 //     setActivePanel(event.state.panelid)
                 // }
             } else {
-                setAppHistory(['home'])
+                setAppViewHistory(['home'])
                 setActivePanel('home')
             }
         }
@@ -78,12 +78,13 @@ function App() {
         }
 
         const vkWebAppInit = async () => {
-            bridge.subscribe(handler)
-
             try {
+                bridge.subscribe(handler)
                 await bridge.send('VKWebAppInit')
+                setIsVKWebAppInitDone(true)
             } catch (err) {
                 console.error(err)
+                bridge.unsubscribe(handler)
                 setPopout(
                     <Alert
                         onClose={() => {
@@ -99,11 +100,7 @@ function App() {
                         <Text>Примите извинения, приложению не удалось загрузиться</Text>
                     </Alert>
                 )
-
-                return
             }
-
-            setIsVKWebAppInitDone(true)
         }
         vkWebAppInit()
 
@@ -180,11 +177,11 @@ function App() {
     }, [isVKWebAppInitDone])
 
     useEffect(() => {
-        if (!isVKWebAppInitDone || !isSlideshowDone) {
+        if (!isSlideshowDone) {
             return
         }
 
-        const fetchUserInLocationHashAndCurrentUser = async () => {
+        const fetchCurrentUser = async () => {
             try {
                 let userid = (new URLSearchParams(window.location.search)).get('vk_user_id')
 
@@ -200,7 +197,7 @@ function App() {
                     <Alert
                         onClose={() => {
                             setPopout(null)
-                            fetchUserInLocationHashAndCurrentUser()
+                            fetchCurrentUser()
                         }}
                         actions={[{
                             title: 'Повторить попытку',
@@ -211,10 +208,11 @@ function App() {
                         <Text>Примите извинения, приложению не удалось загрузиться</Text>
                     </Alert>
                 )
-
-                return
             }
+        }
+        fetchCurrentUser()
 
+        const fetchUserInLocationHash = async () => {
             try {
                 let userid = ''
 
@@ -241,8 +239,8 @@ function App() {
                 console.error(err)
             }
         }
-        fetchUserInLocationHashAndCurrentUser()
-    }, [isVKWebAppInitDone, isSlideshowDone])
+        fetchUserInLocationHash()
+    }, [isSlideshowDone])
 
     const slideshowDoneCallback = useCallback(async () => {
         setActivePanel('home')
@@ -255,15 +253,17 @@ function App() {
         }
     }, [])
 
+    const isAppLoaded = isVKWebAppInitDone && themeOption != null && isSlideshowDone != null && currentUser != null
+
     return (
         <ConfigProvider
             isWebView={true}
             scheme={appScheme}
         >
             <View
-                activePanel={themeOption != null && isSlideshowDone != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'}
+                activePanel={isAppLoaded ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'}
                 popout={popout}
-                history={appHistory}
+                history={appViewHistory}
                 onSwipeBack={currentPlatform != 'desktop_web' ? () => { window.history.back() } : () => { setActivePanel('home') }}
             >
                 <Loading id='loading' />
@@ -272,7 +272,7 @@ function App() {
 
                 <Home id='home' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
                 <Friends id='friends' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} />
-                <Profile id='profile' setActivePanel={setActivePanel} setAppHistory={setAppHistory} setPopout={setPopout} currentUser={currentUser} user={panelProfileUser} />
+                <Profile id='profile' setActivePanel={setActivePanel} setAppViewHistory={setAppViewHistory} setPopout={setPopout} currentUser={currentUser} user={panelProfileUser} />
             </View>
         </ConfigProvider>
     )

@@ -61,7 +61,7 @@ import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок в версии vk.com и m.vk.com
 
-function Profile({ id, setActivePanel, setAppHistory, setPopout, currentUser, user }) {
+function Profile({ id, setActivePanel, setAppViewHistory, setPopout, currentUser, user }) {
 	if (currentUser == null) {
 		return <Panel id={id} />
 	}
@@ -79,7 +79,7 @@ function Profile({ id, setActivePanel, setAppHistory, setPopout, currentUser, us
 			} catch (err) {
 				console.error(err)
 			} finally {
-				setAppHistory(['home', 'profile'])
+				setAppViewHistory(['home', 'profile'])
 				if (currentPlatform != 'desktop_web') {
 					window.history.pushState({ panelid: 'profile', panelProfileUser: user }, `@${user.screen_name ? user.screen_name : `id${user.id}`}`)
 				}
@@ -129,7 +129,7 @@ function Profile({ id, setActivePanel, setAppHistory, setPopout, currentUser, us
 Profile.propTypes = {
 	id: PropTypes.string.isRequired,
 	setActivePanel: PropTypes.func.isRequired,
-	setAppHistory: PropTypes.func.isRequired,
+	setAppViewHistory: PropTypes.func.isRequired,
 	setPopout: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
 		id: PropTypes.number.isRequired,
@@ -400,10 +400,10 @@ function RatingCard({ ratingCounts }) {
 				header={<Header
 					mode='secondary'
 					style={{
-						'-webkit-user-select': 'none',
-						'-webkit-touch-callout': 'none',
-						'-moz-user-select': 'none',
-						'-ms-user-select': 'none',
+						WebkitUserSelect: 'none',
+						WebkitTouchCallout: 'none',
+						MozUserSelect: 'none',
+						msUserSelect: 'none',
 						userSelect: 'none',
 					}}
 				>Рейтинг</Header>}

@@ -308,10 +308,10 @@ function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) 
 			<Group header={<Header
 				mode='secondary'
 				style={{
-					'-webkit-user-select': 'none',
-					'-webkit-touch-callout': 'none',
-					'-moz-user-select': 'none',
-					'-ms-user-select': 'none',
+					WebkitUserSelect: 'none',
+					WebkitTouchCallout: 'none',
+					MozUserSelect: 'none',
+					msUserSelect: 'none',
 					userSelect: 'none',
 				}}
 				aside={<Button

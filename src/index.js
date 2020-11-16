@@ -170,7 +170,8 @@ function App() {
             if (isSlideshowDoneData == null) {
                 setIsSlideshowDone(false)
             } else {
-                setIsSlideshowDone(Boolean(isSlideshowDoneData))
+                // setIsSlideshowDone(Boolean(isSlideshowDoneData))
+                setIsSlideshowDone(false)
             }
         }
         fetchThingsFromStorage()
@@ -253,15 +254,13 @@ function App() {
         }
     }, [])
 
-    const isAppLoaded = isVKWebAppInitDone && themeOption != null && isSlideshowDone != null && currentUser != null
-
     return (
         <ConfigProvider
             isWebView={true}
             scheme={appScheme}
         >
             <View
-                activePanel={isAppLoaded ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'}
+                activePanel={themeOption != null && isSlideshowDone != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'}
                 popout={popout}
                 history={appViewHistory}
                 onSwipeBack={currentPlatform != 'desktop_web' ? () => { window.history.back() } : () => { setActivePanel('home') }}

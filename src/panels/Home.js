@@ -28,6 +28,8 @@ import {
 	ActionSheetItem,
 	RichCell,
 	Avatar,
+	Alert,
+	Text,
 } from '@vkontakte/vkui'
 
 import {
@@ -75,7 +77,7 @@ function Home({ id, setActivePanel, setPanelProfileUser, setPopout, changeThemeO
 
 	switch (currentTab) {
 		case 'profile_selection':
-			view = <ProfileSelection setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} currentUser={currentUser} />
+			view = <ProfileSelection setActivePanel={setActivePanel} setPopout={setPopout} setPanelProfileUser={setPanelProfileUser} currentUser={currentUser} />
 			break
 		case 'other':
 			view = <Other setPopout={setPopout} changeThemeOption={changeThemeOption} />
@@ -138,7 +140,7 @@ function LastViewedProfilesPlaceholder() {
 	)
 }
 
-function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) {
+function ProfileSelection({ setActivePanel, setPopout, setPanelProfileUser, currentUser }) {
 	const [isFetching, setIsFetching] = useState(false)
 
 	const [currentUserAverageRatingEmoji, setCurrentUserAverageRatingEmoji] = useState(null)
@@ -316,14 +318,33 @@ function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) 
 				}}
 				aside={<Button
 					mode="tertiary"
-					onClick={async () => {
-						try {
-							await bridge.send('VKWebAppStorageSet', { key: 'last_viewed_profiles', value: "" })
-							setLastProfilesView(<LastViewedProfilesPlaceholder />)
-						} catch (err) {
-							console.error(err)
-							showErrorSnackbar(setSnackbar, "Не удалось очистить список последних открытых профилей")
-						}
+					onClick={() => {
+						setPopout(
+							<Alert
+								onClose={() => {
+									setPopout(null)
+								}}
+								actions={[{
+									title: 'Да',
+									autoclose: true,
+									action: async () => {
+										try {
+											await bridge.send('VKWebAppStorageSet', { key: 'last_viewed_profiles', value: "" })
+											setLastProfilesView(<LastViewedProfilesPlaceholder />)
+										} catch (err) {
+											console.error(err)
+											showErrorSnackbar(setSnackbar, "Не удалось очистить список последних открытых профилей")
+										}
+									}
+								}, {
+									title: "Отмена",
+									autoclose: true,
+									mode: 'cancel',
+								}]}
+							>
+								<Text>Вы уверены, что хотите очистить список последних открытых профилей?</Text>
+							</Alert>
+						)
 					}}
 				>Очистить</Button>}
 			>Последние открытые</Header>}>
@@ -337,6 +358,7 @@ function ProfileSelection({ setActivePanel, setPanelProfileUser, currentUser }) 
 
 ProfileSelection.propTypes = {
 	setActivePanel: PropTypes.func.isRequired,
+	setPopout: PropTypes.func.isRequired,
 	setPanelProfileUser: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
 		id: PropTypes.number.isRequired,

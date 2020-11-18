@@ -26,10 +26,6 @@ import Friends from './panels/Friends'
 import Profile from './panels/Profile'
 
 import {
-    currentPlatform,
-} from './panels/_platformSwitch.js'
-
-import {
     vkUsersGet,
 } from './sociorate-api'
 
@@ -53,20 +49,45 @@ function App() {
     const [currentUser, setCurrentUser] = useState(null)
     const [panelProfileUser, setPanelProfileUser] = useState(null)
 
+    const handleHistoryStateChange = useCallback((state) => {
+        let panelid = ""
+
+        if (state != null) {
+            if (state.panelProfileUser) {
+                setPanelProfileUser(state.panelProfileUser)
+            }
+            if (state.panelid) {
+                panelid = state.panelid
+            }
+        } else {
+            panelid = 'home'
+        }
+
+        let index = appViewHistory.indexOf(panelid)
+        if (index >= 0) {
+            setAppViewHistory(appViewHistory.slice(0, index + 2))
+        } else {
+            setAppViewHistory([...appViewHistory, panelid])
+        }
+
+        console.log(appViewHistory)
+
+        setActivePanel(panelid)
+    })
+
+    const go = useCallback((panelid, stateFields) => {
+        let state = { ...stateFields, panelid: panelid }
+        window.history.pushState(state, panelid)
+        handleHistoryStateChange(state)
+    })
+
+    const goBack = useCallback(() => {
+        window.history.back()
+    }, [])
+
     useEffect(() => {
         window.onpopstate = (event) => {
-            if (event.state != null) {
-                // TODO: роутинг
-                // if (event.state.panelProfileUser) {
-                //     setPanelProfileUser(event.state.panelProfileUser)
-                // }
-                // if (event.state.panelid) {
-                //     setActivePanel(event.state.panelid)
-                // }
-            } else {
-                setAppViewHistory(['home'])
-                setActivePanel('home')
-            }
+            handleHistoryStateChange(event.state)
         }
 
         const handler = ({ detail: { type, data } }) => {
@@ -232,11 +253,10 @@ function App() {
                     throw new Error('`user` is empty')
                 }
 
-                setPanelProfileUser(user)
-                setActivePanel('profile')
+                go('profile', { panelProfileUser: user })
             } catch (err) {
-                setActivePanel('home')
                 console.error(err)
+                setActivePanel('home')
             }
         }
         fetchUserInLocationHash()
@@ -262,15 +282,15 @@ function App() {
                 activePanel={themeOption != null && isSlideshowDone != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'}
                 popout={popout}
                 history={appViewHistory}
-                onSwipeBack={currentPlatform != 'desktop_web' ? () => { window.history.back() } : () => { setActivePanel('home') }}
+                onSwipeBack={() => { goBack() }}
             >
                 <Loading id='loading' />
 
                 <Slideshow id='slideshow' doneCallback={slideshowDoneCallback} />
 
-                <Home id='home' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
-                <Friends id='friends' setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} />
-                <Profile id='profile' setActivePanel={setActivePanel} setAppViewHistory={setAppViewHistory} setPopout={setPopout} currentUser={currentUser} user={panelProfileUser} />
+                <Home id='home' go={go} setPopout={setPopout} changeThemeOption={changeThemeOption} currentUser={currentUser} />
+                <Friends id='friends' go={go} goBack={goBack} />
+                <Profile id='profile' goBack={goBack} setPopout={setPopout} currentUser={currentUser} user={panelProfileUser} />
             </View>
         </ConfigProvider>
     )

@@ -5,14 +5,13 @@ import {
     SimpleCell,
 } from '@vkontakte/vkui'
 
-function UsersList({ setActivePanel, setPanelProfileUser, users }) {
+function UsersList({ go, users }) {
     return users.map(user => (
         <SimpleCell
             key={user.id}
             before={<Avatar size={48} src={user.photo_200} />}
             onClick={() => {
-                setPanelProfileUser(user)
-                setActivePanel('profile')
+                go('profile', { panelProfileUser: user })
             }}
         >{`${user.first_name} ${user.last_name}`}</SimpleCell>
     ))

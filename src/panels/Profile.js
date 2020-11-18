@@ -40,10 +40,6 @@ import {
 	getRating,
 } from '../sociorate-api'
 
-import {
-	currentPlatform,
-} from './_platformSwitch.js'
-
 import vkQr from '@vkontakte/vk-qr'
 
 import {
@@ -61,7 +57,7 @@ import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок в версии vk.com и m.vk.com
 
-function Profile({ id, setActivePanel, setAppViewHistory, setPopout, currentUser, user }) {
+function Profile({ id, goBack, setPopout, currentUser, user }) {
 	if (currentUser == null) {
 		return <Panel id={id} />
 	}
@@ -72,20 +68,6 @@ function Profile({ id, setActivePanel, setAppViewHistory, setPopout, currentUser
 		if (user == null) {
 			return
 		}
-
-		const setLocation = async () => {
-			try {
-				await bridge.send('VKWebAppSetLocation', { location: `@${user.screen_name ? user.screen_name : `id${user.id}`}` })
-			} catch (err) {
-				console.error(err)
-			} finally {
-				setAppViewHistory(['home', 'profile'])
-				if (currentPlatform != 'desktop_web') {
-					window.history.pushState({ panelid: 'profile', panelProfileUser: user }, `@${user.screen_name ? user.screen_name : `id${user.id}`}`)
-				}
-			}
-		}
-		setLocation()
 
 		const saveLastViewed = async () => {
 			try {
@@ -114,7 +96,7 @@ function Profile({ id, setActivePanel, setAppViewHistory, setPopout, currentUser
 	return (
 		<Panel id={id}>
 			<PanelHeader
-				left={<PanelHeaderBack onClick={currentPlatform != 'desktop_web' ? () => { window.history.back() } : () => { setActivePanel('home') }} />}
+				left={<PanelHeaderBack onClick={() => { goBack() }} />}
 			>
 				<PanelHeaderContent>{user == null ? `Загрузка профиля` : `@${user.screen_name ? user.screen_name : `id${user.id}`} `}</PanelHeaderContent>
 			</PanelHeader>
@@ -128,8 +110,7 @@ function Profile({ id, setActivePanel, setAppViewHistory, setPopout, currentUser
 
 Profile.propTypes = {
 	id: PropTypes.string.isRequired,
-	setActivePanel: PropTypes.func.isRequired,
-	setAppViewHistory: PropTypes.func.isRequired,
+	goBack: PropTypes.func.isRequired,
 	setPopout: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
 		id: PropTypes.number.isRequired,
@@ -189,7 +170,7 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 												return
 											}
 										}
-										showSuccessSnackbar(setSnackbar, 'Ссылка скопирована!')
+										showSuccessSnackbar(setSnackbar, 'Ссылка скопирована в буфер обмена!')
 									}
 								}, {
 									title: 'Отмена',

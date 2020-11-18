@@ -24,59 +24,16 @@ import {
     showErrorSnackbar,
 } from './_showSnackbar'
 
-import {
-    vkUsersGet,
-} from '../sociorate-api'
-
 import UsersList from './_UsersList'
 
 import bridge from '@vkontakte/vk-bridge'
 
-function Friends({ id, setActivePanel, setPanelProfileUser }) {
+function Friends({ id, go, goBack }) {
     const [snackbar, setSnackbar] = useState(null)
     const [friendsView, setFriendsView] = useState(null)
 
     useEffect(() => {
-        const fetchFriends = async () => {
-            let friend = null
-            let isErrNotSupportedPlatform = false
-
-            try {
-                friend = (await bridge.send('VKWebAppGetFriends', { multi: false })).users[0]
-            } catch (err) {
-                switch (err.error_data.error_code) {
-                    case 4:
-                        setActivePanel('home')
-                        return
-                    case 6:
-                        isErrNotSupportedPlatform = true
-                        break
-                    default:
-                        console.error(err)
-                        showErrorSnackbar(setSnackbar, 'Не удалось открыть список друзей')
-                        return
-                }
-            }
-
-            if (friend == null && !isErrNotSupportedPlatform) {
-                setActivePanel('home')
-                return
-            }
-
-            if (friend != null) {
-                let fetchedFriend = null
-                try {
-                    fetchedFriend = (await vkUsersGet(friend.id))[0]
-                } catch (err) {
-                    console.error(err)
-                }
-
-                setPanelProfileUser(fetchedFriend ? fetchedFriend : friend)
-                setActivePanel('profile')
-
-                return
-            }
-
+        const openFriendsView = async () => {
             let accessData = null
 
             try {
@@ -95,7 +52,7 @@ function Friends({ id, setActivePanel, setPanelProfileUser }) {
                         stretched
                         icon={<Icon56CheckCircleDeviceOutline />}
                         action={<Button onClick={() => {
-                            fetchFriends()
+                            openFriendsView()
                         }} size='l'>Хорошо</Button>}
                     >Для работы этой функции необходимо предоставить доступ к списку друзей.</Placeholder>
                 )
@@ -117,8 +74,7 @@ function Friends({ id, setActivePanel, setPanelProfileUser }) {
             if (friends !== null) {
                 setFriendsView(
                     <FriendsDisplay
-                        setActivePanel={setActivePanel}
-                        setPanelProfileUser={setPanelProfileUser}
+                        go={go}
                         setSnackbar={setSnackbar}
                         accessToken={accessData.access_token}
                         friends={friends}
@@ -126,13 +82,13 @@ function Friends({ id, setActivePanel, setPanelProfileUser }) {
                 )
             }
         }
-        fetchFriends()
+        openFriendsView()
     }, [])
 
     return (
         <Panel id={id}>
             <PanelHeader
-                left={<PanelHeaderClose onClick={() => { setActivePanel('home') }} />}
+                left={<PanelHeaderClose onClick={() => { goBack() }} />}
                 separator={false}
             >
                 <PanelHeaderContent>Друзья</PanelHeaderContent>
@@ -147,12 +103,12 @@ function Friends({ id, setActivePanel, setPanelProfileUser }) {
 
 Friends.propTypes = {
     id: PropTypes.string.isRequired,
-    setActivePanel: PropTypes.func.isRequired,
-    setPanelProfileUser: PropTypes.func.isRequired,
+    go: PropTypes.func.isRequired,
+    goBack: PropTypes.func.isRequired,
 }
 
-function FriendsDisplay({ setActivePanel, setPanelProfileUser, setSnackbar, accessToken, friends }) {
-    let origFriendsCells = <UsersList setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} users={friends} />
+function FriendsDisplay({ go, setSnackbar, accessToken, friends }) {
+    let origFriendsCells = <UsersList go={go} users={friends} />
 
     const [friendsCells, setFriendsCells] = useState(origFriendsCells)
 
@@ -188,7 +144,7 @@ function FriendsDisplay({ setActivePanel, setPanelProfileUser, setSnackbar, acce
                     return
                 }
 
-                setFriendsCells(<UsersList setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} users={friendsSearch} />)
+                setFriendsCells(<UsersList go={go} users={friendsSearch} />)
             }} after={null} />
 
             {friendsCells}
@@ -197,8 +153,7 @@ function FriendsDisplay({ setActivePanel, setPanelProfileUser, setSnackbar, acce
 }
 
 FriendsDisplay.propTypes = {
-    setActivePanel: PropTypes.func.isRequired,
-    setPanelProfileUser: PropTypes.func.isRequired,
+    go: PropTypes.func.isRequired,
     setSnackbar: PropTypes.func.isRequired,
     accessToken: PropTypes.string.isRequired,
     friends: PropTypes.arrayOf(PropTypes.shape({

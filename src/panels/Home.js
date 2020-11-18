@@ -66,7 +66,7 @@ import { platformSwitch } from './_platformSwitch'
 
 // TODO: сделать вкладки сменяемыми свайпами
 
-function Home({ id, setActivePanel, setPanelProfileUser, setPopout, changeThemeOption, currentUser }) {
+function Home({ id, go, setPopout, changeThemeOption, currentUser }) {
 	if (currentUser == null) {
 		return <Panel id={id} />
 	}
@@ -77,7 +77,7 @@ function Home({ id, setActivePanel, setPanelProfileUser, setPopout, changeThemeO
 
 	switch (currentTab) {
 		case 'profile_selection':
-			view = <ProfileSelection setActivePanel={setActivePanel} setPopout={setPopout} setPanelProfileUser={setPanelProfileUser} currentUser={currentUser} />
+			view = <ProfileSelection go={go} setPopout={setPopout} currentUser={currentUser} />
 			break
 		case 'other':
 			view = <Other setPopout={setPopout} changeThemeOption={changeThemeOption} />
@@ -118,8 +118,7 @@ function Home({ id, setActivePanel, setPanelProfileUser, setPopout, changeThemeO
 
 Home.propTypes = {
 	id: PropTypes.string.isRequired,
-	setActivePanel: PropTypes.func.isRequired,
-	setPanelProfileUser: PropTypes.func.isRequired,
+	go: PropTypes.func.isRequired,
 	setPopout: PropTypes.func.isRequired,
 	changeThemeOption: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
@@ -140,7 +139,7 @@ function LastViewedProfilesPlaceholder() {
 	)
 }
 
-function ProfileSelection({ setActivePanel, setPopout, setPanelProfileUser, currentUser }) {
+function ProfileSelection({ go, setPopout, currentUser }) {
 	const [isFetching, setIsFetching] = useState(false)
 
 	const [currentUserAverageRatingEmoji, setCurrentUserAverageRatingEmoji] = useState(null)
@@ -201,7 +200,7 @@ function ProfileSelection({ setActivePanel, setPopout, setPanelProfileUser, curr
 			return
 		}
 
-		setLastProfilesView(<UsersList setActivePanel={setActivePanel} setPanelProfileUser={setPanelProfileUser} users={users} />)
+		setLastProfilesView(<UsersList go={go} users={users} />)
 	}, [])
 
 	useEffect(() => {
@@ -224,8 +223,7 @@ function ProfileSelection({ setActivePanel, setPopout, setPanelProfileUser, curr
 				return
 			}
 
-			setPanelProfileUser(user)
-			setActivePanel('profile')
+			go('profile', { panelProfileUser: user })
 		} catch (err) {
 			if (err.error_code === 113) {
 				showErrorSnackbar(setSnackbar, 'Пользователь не найден')
@@ -262,8 +260,7 @@ function ProfileSelection({ setActivePanel, setPopout, setPanelProfileUser, curr
 					caption='Мой профиль'
 					onClick={async () => {
 						try {
-							setPanelProfileUser(currentUser)
-							setActivePanel('profile')
+							go('profile', { panelProfileUser: currentUser })
 						} catch (err) {
 							console.error(err)
 							showErrorSnackbar(setSnackbar, 'Не удалось получить информацию о текущем профиле')
@@ -290,7 +287,45 @@ function ProfileSelection({ setActivePanel, setPopout, setPanelProfileUser, curr
 				<SimpleCell
 					style={{ borderRadius: 'inherit' }}
 					before={<Icon28UserOutline />}
-					onClick={() => { setActivePanel('friends') }}>Выбрать из друзей</SimpleCell>
+					onClick={async () => {
+						let friend = null
+						let isErrNotSupportedPlatform = false
+
+						try {
+							friend = (await bridge.send('VKWebAppGetFriends', { multi: false })).users[0]
+						} catch (err) {
+							switch (err.error_data.error_code) {
+								case 4:
+									return
+								case 6:
+									isErrNotSupportedPlatform = true
+									break
+								default:
+									console.error(err)
+									showErrorSnackbar(setSnackbar, 'Не удалось открыть список друзей')
+									return
+							}
+						}
+
+						if (friend == null && !isErrNotSupportedPlatform) {
+							return
+						}
+
+						if (friend != null) {
+							let fetchedFriend = null
+							try {
+								fetchedFriend = (await vkUsersGet(friend.id))[0]
+							} catch (err) {
+								console.error(err)
+							}
+
+							go('profile', { panelProfileUser: fetchedFriend ? fetchedFriend : friend })
+
+							return
+						}
+
+						go('friends')
+					}}>Выбрать из друзей</SimpleCell>
 
 				<FormLayout>
 					<Input top='По @ID или ссылке ВК/Sociorate' value={userIDInput} onChange={(event) => {
@@ -357,9 +392,8 @@ function ProfileSelection({ setActivePanel, setPopout, setPanelProfileUser, curr
 }
 
 ProfileSelection.propTypes = {
-	setActivePanel: PropTypes.func.isRequired,
+	go: PropTypes.func.isRequired,
 	setPopout: PropTypes.func.isRequired,
-	setPanelProfileUser: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
 		id: PropTypes.number.isRequired,
 		screen_name: PropTypes.string.isRequired,

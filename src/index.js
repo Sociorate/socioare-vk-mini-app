@@ -91,10 +91,8 @@ function App() {
         }
 
         const handler = ({ detail: { type, data } }) => {
-            switch (type) {
-                case 'VKWebAppUpdateConfig':
-                    setAutoTheme(data.scheme === 'space_gray' || data.scheme === 'client_dark' ? 'dark' : 'light')
-                    break
+            if (type == 'VKWebAppUpdateConfig') {
+                setAutoTheme(data.scheme === 'space_gray' || data.scheme === 'client_dark' ? 'dark' : 'light')
             }
         }
 
@@ -235,13 +233,8 @@ function App() {
 
         const fetchUserInLocationHash = async () => {
             try {
-                let userid = ''
-
                 let location = window.location.hash.substring(window.location.hash.indexOf('#') + 1)
-                let index = location.indexOf('@')
-                if (index !== -1) {
-                    userid = location.substring(index + 1)
-                }
+                let userid = location.substring(location.indexOf('@') + 1)
 
                 if (userid === '') {
                     setActivePanel('home')

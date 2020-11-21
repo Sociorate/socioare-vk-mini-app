@@ -7,14 +7,18 @@ const currentPlatform = new URLSearchParams(window.location.search).get("vk_plat
 // desktop_web
 // mobile_android_messenger
 // mobile_iphone_messenger
-function platformSwitch(platforms, callback) {
+function platformSwitch(platforms, callback, elseCallback) {
     if (platforms.indexOf(currentPlatform) !== -1) {
-        return callback()
+        if (elseCallback) {
+            return callback()
+        }
+    } else {
+        if (elseCallback) {
+            return elseCallback()
+        }
     }
+
     return null
 }
 
-export {
-    platformSwitch,
-    currentPlatform,
-}
+export default platformSwitch

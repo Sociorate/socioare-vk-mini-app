@@ -55,8 +55,8 @@ import NeutralEmoji from '../openmoji-edited/1F610.svg'
 import DislikeEmoji from '../openmoji-edited/1F627.svg'
 import HateEmoji from '../openmoji-edited/1F621.svg'
 
-// TODO: рекламный блок в версии vk.com и m.vk.com
-// TODO: кнопка поделиться историей
+// TODO: рекламный блок для версии vk.com и m.vk.com
+// TODO: кнопка поделиться в истории внизу профиля в моде простого текста (tertiary?)
 
 function Profile({ id, goBack, setPopout, currentUser, user }) {
 	if (currentUser == null) {

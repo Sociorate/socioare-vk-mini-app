@@ -56,6 +56,7 @@ import DislikeEmoji from '../openmoji-edited/1F627.svg'
 import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок в версии vk.com и m.vk.com
+// TODO: кнопка поделиться историей
 
 function Profile({ id, goBack, setPopout, currentUser, user }) {
 	if (currentUser == null) {
@@ -134,7 +135,8 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 					<Button mode='tertiary' stretched
 						href={`https://vk.com/${user.screen_name ? user.screen_name : `id${user.id}`}`}
 						target='_blank'
-					> <Icon24Link /></Button >
+					><Icon24Link /></Button >
+
 					<Button mode='tertiary' stretched onClick={async () => {
 						try {
 							await bridge.send('VKWebAppShare', { link: `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}` })
@@ -145,6 +147,7 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 							}
 						}
 					}}><Icon24ShareOutline /></Button>
+
 					<Button mode='tertiary' stretched onClick={() => {
 						const targetstr = `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}`
 
@@ -194,7 +197,7 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 							</Alert>
 						)
 					}}><Icon24Qr /></Button>
-				</div >
+				</div>
 			}
 		>
 			<Title level="2" weight="regular">{`${user.first_name} ${user.last_name}`}</Title>

@@ -9,7 +9,7 @@ const currentPlatform = new URLSearchParams(window.location.search).get("vk_plat
 // mobile_iphone_messenger
 function platformSwitch(platforms, callback, elseCallback) {
     if (platforms.indexOf(currentPlatform) !== -1) {
-        if (elseCallback) {
+        if (callback) {
             return callback()
         }
     } else {

@@ -293,8 +293,8 @@ function App() {
     )
 }
 
-if (process.env.NODE_ENV === 'development') {
-    import('./eruda') //runtime download
-}
+// if (process.env.NODE_ENV === 'development') {
+//     import('./eruda') //runtime download
+// }
 
 ReactDOM.render(<React.StrictMode><App /></React.StrictMode>, document.getElementById('root'))

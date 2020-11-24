@@ -193,12 +193,6 @@ function App() {
             }
         }
         fetchThingsFromStorage()
-    }, [isVKWebAppInitDone])
-
-    useEffect(() => {
-        if (!isSlideshowDone) {
-            return
-        }
 
         const fetchCurrentUser = async () => {
             try {
@@ -246,17 +240,27 @@ function App() {
                     throw new Error('`user` is empty')
                 }
 
-                go('profile', { panelProfileUser: user })
+                setPanelProfileUser(user)
             } catch (err) {
                 console.error(err)
-                setActivePanel('home')
             }
         }
         fetchUserInLocationHash()
+    }, [isVKWebAppInitDone])
+
+    useEffect(() => {
+        if (!isSlideshowDone) {
+            return
+        }
+
+        if (panelProfileUser != null) {
+            go('profile', { panelProfileUser: panelProfileUser })
+        } else {
+            setActivePanel('home')
+        }
     }, [isSlideshowDone])
 
     const slideshowDoneCallback = useCallback(async () => {
-        setActivePanel('home')
         setIsSlideshowDone(true)
 
         try {
@@ -272,7 +276,7 @@ function App() {
             scheme={appScheme}
         >
             <View
-                activePanel={themeOption != null && isSlideshowDone != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'}
+                activePanel={themeOption != null && isSlideshowDone != null && currentUser != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'}
                 popout={popout}
                 history={appViewHistory}
                 onSwipeBack={() => { goBack() }}

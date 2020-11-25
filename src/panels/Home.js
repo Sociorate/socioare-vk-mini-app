@@ -210,21 +210,17 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 	}, [])
 
 	const loadUser = useCallback(async (stringWithUserID) => {
+		let index = stringWithUserID.lastIndexOf('@')
+		if (index === -1) {
+			index = stringWithUserID.lastIndexOf('/')
+		}
+
+		let userid = stringWithUserID.substring(index + 1)
+
+		let user = null
+
 		try {
-			let index = stringWithUserID.lastIndexOf('@')
-			if (index === -1) {
-				index = stringWithUserID.lastIndexOf('/')
-			}
-
-			let userid = stringWithUserID.substring(index + 1)
-
-			let user = (await vkUsersGet(userid))[0]
-			if (!user) {
-				showErrorSnackbar(setSnackbar, 'Пользователь не найден')
-				return
-			}
-
-			go('profile', { panelProfileUser: user })
+			user = (await vkUsersGet(userid))[0]
 		} catch (err) {
 			if (err.error_code === 113) {
 				showErrorSnackbar(setSnackbar, 'Пользователь не найден')
@@ -233,6 +229,13 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 				showErrorSnackbar(setSnackbar, 'Не удалось загрузить профиль')
 			}
 		}
+
+		if (!user) {
+			showErrorSnackbar(setSnackbar, 'Пользователь не найден')
+			return
+		}
+
+		go('profile', { panelProfileUser: user })
 	}, [])
 
 	return (

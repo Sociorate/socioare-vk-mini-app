@@ -34,52 +34,49 @@ function Friends({ id, go, goBack }) {
 
     useEffect(() => {
         const openFriendsView = async () => {
-            let accessData = null
-
             try {
-                accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: 'friends' })
-            } catch (err) {
-                if (err.error_data.error_code !== 4) {
-                    console.error(err)
-                    showErrorSnackbar(setSnackbar, 'Не удалось получить список друзей')
+                let accessData = null
+
+                try {
+                    accessData = await bridge.send('VKWebAppGetAuthToken', { app_id: 7607943, scope: 'friends' })
+                } catch (err) {
+                    if (err.error_data.error_code === 4) {
+                        return
+                    } else {
+                        throw err
+                    }
+                }
+
+                if (accessData == null || accessData.scope.indexOf('friends') === -1) {
+                    setFriendsView(
+                        <Placeholder
+                            stretched
+                            icon={<Icon56CheckCircleDeviceOutline />}
+                            action={<Button onClick={() => {
+                                openFriendsView()
+                            }} size='l'>Хорошо</Button>}
+                        >Для работы этой функции необходимо предоставить доступ к списку друзей.</Placeholder>
+                    )
                     return
                 }
-            }
 
-            if (accessData == null || accessData.scope.indexOf('friends') === -1) {
-                setFriendsView(
-                    <Placeholder
-                        stretched
-                        icon={<Icon56CheckCircleDeviceOutline />}
-                        action={<Button onClick={() => {
-                            openFriendsView()
-                        }} size='l'>Хорошо</Button>}
-                    >Для работы этой функции необходимо предоставить доступ к списку друзей.</Placeholder>
-                )
-                return
-            }
+                setFriendsView(<PanelSpinner />)
 
-            let friends = null
+                let friends = (await bridge.send('VKWebAppCallAPIMethod', { method: 'friends.get', params: { order: 'name', fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response.items
 
-            setFriendsView(<PanelSpinner />)
-
-            try {
-                friends = (await bridge.send('VKWebAppCallAPIMethod', { method: 'friends.get', params: { order: 'name', fields: 'photo_200,screen_name', v: '5.124', access_token: accessData.access_token } })).response.items
+                if (friends !== null) {
+                    setFriendsView(
+                        <FriendsDisplay
+                            go={go}
+                            setSnackbar={setSnackbar}
+                            accessToken={accessData.access_token}
+                            friends={friends}
+                        />
+                    )
+                }
             } catch (err) {
                 console.error(err)
                 showErrorSnackbar(setSnackbar, 'Не удалось получить список друзей')
-                return
-            }
-
-            if (friends !== null) {
-                setFriendsView(
-                    <FriendsDisplay
-                        go={go}
-                        setSnackbar={setSnackbar}
-                        accessToken={accessData.access_token}
-                        friends={friends}
-                    />
-                )
             }
         }
         openFriendsView()

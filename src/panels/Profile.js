@@ -259,14 +259,21 @@ function RatingButtons({ userid, setSnackbar, fetchRating }) {
 		try {
 			await postRating(userid, rate)
 		} catch (err) {
-			if (err.error_code === 98765) {
-				showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать можно 9 раз в 24 часа")
-			} else if (err.error_code === 4321) {
-				showErrorSnackbar(setSnackbar, "Во избежания флуда, оценивать одного человека можно 2 раза в 24 часа")
-			} else {
-				console.error(err)
-				showErrorSnackbar(setSnackbar, 'Не удалось отправить оценку')
+			let msg = ""
+			switch (err.error_code) {
+				case 98765:
+					msg = "Во избежания флуда, оценивать можно 9 раз в 24 часа"
+					break
+				case 4321:
+					msg = "Во избежания флуда, оценивать одного человека можно 2 раза в 24 часа"
+					break
+				default:
+					console.error(err)
+					msg = 'Не удалось отправить оценку'
 			}
+
+			showErrorSnackbar(setSnackbar, msg)
+
 			return
 		}
 
@@ -417,27 +424,26 @@ function RatingCard({ ratingCounts }) {
 
 function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 	const [isFetching, setIsFetching] = useState(false)
-	const [ratingCounts, setRatingCounts] = useState(null)
+	const [ratingCard, setRatingCard] = useState(null)
 
 	const fetchRating = useCallback(async () => {
-		let prevRatingCounts = ratingCounts
+		let prevRatingCard = ratingCard
 
-		setRatingCounts(null)
-
-		let ratingCountsData = null
 		try {
-			ratingCountsData = (await getRating(user.id)).rating_counts
+			setRatingCard(<PanelSpinner />)
+
+			let ratingCounts = (await getRating(user.id)).rating_counts
+
+			if (!ratingCounts) {
+				throw new Error('`ratingCountsData` is empty')
+			}
+
+			setRatingCard(<RatingCard ratingCounts={ratingCounts} />)
 		} catch (err) {
 			console.error(err)
-		}
-
-		if (!ratingCountsData) {
-			setRatingCounts(prevRatingCounts)
+			setRatingCard(prevRatingCard)
 			showErrorSnackbar(setSnackbar, "Не удалось получить данные о рейтинге")
-			return
 		}
-
-		setRatingCounts(ratingCountsData)
 	}, [user])
 
 	const [promoBanner, setPromoBanner] = useState(null)
@@ -474,7 +480,7 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 
 			{promoBanner}
 
-			{ratingCounts != null ? <RatingCard ratingCounts={ratingCounts} /> : <PanelSpinner />}
+			{ratingCard}
 		</PullToRefresh>
 	)
 }

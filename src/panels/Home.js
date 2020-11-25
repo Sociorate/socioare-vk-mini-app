@@ -150,6 +150,8 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 
 	const fetchCurrentUserRating = useCallback(async () => {
 		try {
+			setCurrentUserAverageRatingEmoji(null)
+
 			let ratingCounts = (await getRating(currentUser.id)).rating_counts
 
 			let [averageRating, averageRatingEmoji] = createAverageRating(ratingCounts)
@@ -168,39 +170,38 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 	}, [])
 
 	const fetchLastViewedProfiles = useCallback(async () => {
-		setLastProfilesView(<PanelSpinner />)
-
-		let userids = ''
-
 		try {
-			userids = String((await bridge.send('VKWebAppStorageGet', { keys: ['last_viewed_profiles'] })).keys[0].value)
+			setLastProfilesView(<PanelSpinner />)
+
+			let userids = String((await bridge.send('VKWebAppStorageGet', { keys: ['last_viewed_profiles'] })).keys[0].value)
+			if (userids === '') {
+				setLastProfilesView(<LastViewedProfilesPlaceholder />)
+				return
+			}
+
+			let users = []
+
+			try {
+				users = await vkUsersGet(userids)
+			} catch (err) {
+				if (err.error_code === 113) {
+					return
+				} else {
+					throw err
+				}
+			}
+
+			if (!users || users.length === 0) {
+				setLastProfilesView(<LastViewedProfilesPlaceholder />)
+				return
+			}
+
+			setLastProfilesView(<UsersList go={go} users={users} />)
 		} catch (err) {
 			console.error(err)
+			setLastProfilesView(null)
 			showErrorSnackbar(setSnackbar, 'Не удалось загрузить последние открытые профили')
 		}
-
-		if (userids === '') {
-			setLastProfilesView(<LastViewedProfilesPlaceholder />)
-			return
-		}
-
-		let users = []
-
-		try {
-			users = await vkUsersGet(userids)
-		} catch (err) {
-			if (err.error_code !== 113) {
-				console.error(err)
-				showErrorSnackbar(setSnackbar, 'Не удалось загрузить последние открытые профили')
-			}
-		}
-
-		if (!users || users.length === 0) {
-			setLastProfilesView(<LastViewedProfilesPlaceholder />)
-			return
-		}
-
-		setLastProfilesView(<UsersList go={go} users={users} />)
 	}, [])
 
 	useEffect(() => {

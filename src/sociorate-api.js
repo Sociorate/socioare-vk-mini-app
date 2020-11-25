@@ -1,21 +1,30 @@
 // const endpoint = 'https://localhost'
 const endpoint = 'https://api.sociorate.ru'
 
-const urlParams = new URLSearchParams(window.location.search)
+const vkLanguage = (new URLSearchParams(window.location.search)).get('vk_language')
 
-const signParams = (() => {
-    let orderedParams = new URLSearchParams()
+function createSignParams() {
+    const urlParams = new URLSearchParams(window.location.search)
 
-    for (let [key, value] of urlParams.entries()) {
-        if (key.substring(0, 3) === 'vk_') {
-            orderedParams.set(key, value)
+    const signParamsOrderedString = (() => {
+        let orderedParams = new URLSearchParams()
+
+        for (let [key, value] of urlParams.entries()) {
+            if (key.substring(0, 3) === 'vk_') {
+                orderedParams.set(key, value)
+            }
         }
+
+        return orderedParams.toString()
+    })()
+
+    return {
+        params: String(signParamsOrderedString),
+        sign: String(urlParams.get('sign'))
     }
+}
 
-    return orderedParams.toString()
-})()
-
-const vkLanguage = urlParams.get('vk_language')
+const signParams = createSignParams()
 
 function newApiRequest(method, data) {
     let xhr = new XMLHttpRequest()
@@ -61,7 +70,7 @@ function postRating(userid, rate) {
     return newApiRequest('/post_rating', JSON.stringify({
         vk_user_id: Number(userid),
         rate: Number(rate),
-        sign_params: String(signParams),
+        sign_params: signParams,
     }))
 }
 
@@ -75,7 +84,7 @@ function vkUsersGet(userids) {
     return newApiRequest('/vk_users_get', JSON.stringify({
         user_ids: String(userids),
         lang: String(vkLanguage),
-        sign_params: String(signParams),
+        sign_params: signParams,
     }))
 }
 

@@ -46,7 +46,7 @@ function Slideshow({ id, doneCallback }) {
                         icon={<Icon56FavoriteOutline />}
                         header="Добро пожаловать!"
                         action={<Button size="xl" mode="tertiary" onClick={() => { setSlideIndex(1) }}>Ух ты!</Button>}
-                    >Sociorate - уникальное приложение социального рейтинга</Placeholder>
+                    >Sociorate — уникальное приложение социального рейтинга</Placeholder>
                     <Placeholder
                         icon={<Icon56LikeOutline />}
                         header="Оценивайте"

@@ -130,6 +130,7 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 		<RichCell
 			disabled
 			before={<Avatar size={80} src={user.photo_200} />}
+			style={{ cursor: 'default' }}
 			actions={
 				<div style={{ display: 'flex' }}>
 					<Button mode='tertiary' stretched
@@ -299,7 +300,7 @@ function RatingButtons({ userid, setSnackbar, fetchRating }) {
 
 			<Footer style={{
 				marginTop: '16px',
-			}}>Оценивайте людей после каждой встречи нажимая на эмодзи выше</Footer>
+			}}>Оценивайте людей после каждой встречи, нажимая на эмодзи выше</Footer>
 		</React.Fragment>
 	)
 }
@@ -422,26 +423,84 @@ function RatingCard({ ratingCounts }) {
 	return ratingCard
 }
 
+function ShareAskButton({ setPopout, user }) {
+	if (!NaN) return null
+
+	return (
+		<Footer><Button mode='tertiary' onClick={async () => {
+			setPopout(
+				await bridge.send('VKWebAppShowStoryBox', {
+					background_type: 'image',
+					url: "https://sun9-65.userapi.com/c850136/v850136098/1b77eb/0YK6suXkY24.jpg",
+					locked: true,
+					stickers: [{
+						sticker_type: 'renderable',
+						sticker: {
+							content_type: 'image',
+							url: 'https://sun9-65.userapi.com/c850136/v850136098/1b77eb/0YK6suXkY24.jpg',
+							transform: {
+								relation_width: 0.25,
+								gravity: 'center_bottom',
+							},
+							clickable_zones: [{
+								action_type: 'app',
+								action: {
+									app_id: 7607943,
+									app_context: String(user.id),
+								},
+								clickable_area: [{
+									x: 0,
+									y: 0,
+								}, {
+									x: 1,
+									y: 0,
+								}, {
+									x: 1,
+									y: 1,
+								}, {
+									x: 0,
+									y: 1,
+								}]
+							}],
+							can_delete: false,
+						}
+					}]
+				})
+			)
+		}}>Поделиться рейтингом и ссылкой</Button></Footer >
+	)
+}
+
+ShareAskButton.propTypes = {
+	setPopout: PropTypes.func.isRequired,
+	user: PropTypes.shape({
+		id: PropTypes.number.isRequired,
+		screen_name: PropTypes.string.isRequired,
+	}).isRequired,
+}
+
 function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 	const [isFetching, setIsFetching] = useState(false)
+	const [ratingCounts, setRatingCounts] = useState([0, 0, 0, 0, 0])
 	const [ratingCard, setRatingCard] = useState(null)
 
 	const fetchRating = useCallback(async () => {
-		let prevRatingCard = ratingCard
+		let prevRatingCounts = ratingCounts
 
 		try {
 			setRatingCard(<PanelSpinner />)
 
-			let ratingCounts = (await getRating(user.id)).rating_counts
+			let ratingCountsData = (await getRating(user.id)).rating_counts
 
-			if (!ratingCounts) {
+			if (!ratingCountsData) {
 				throw new Error('`ratingCountsData` is empty')
 			}
 
-			setRatingCard(<RatingCard ratingCounts={ratingCounts} />)
+			setRatingCounts(ratingCounts)
+			setRatingCard(<RatingCard ratingCounts={ratingCountsData} />)
 		} catch (err) {
 			console.error(err)
-			setRatingCard(prevRatingCard)
+			setRatingCard(<RatingCard ratingCounts={prevRatingCounts} />)
 			showErrorSnackbar(setSnackbar, "Не удалось получить данные о рейтинге")
 		}
 	}, [user])
@@ -481,6 +540,8 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 			{promoBanner}
 
 			{ratingCard}
+
+			{<ShareAskButton setPopout={setPopout} user={user} ratingCounts={ratingCounts} />}
 		</PullToRefresh>
 	)
 }

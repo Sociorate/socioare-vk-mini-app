@@ -1,4 +1,5 @@
 import '@vkontakte/vkui/dist/vkui.css'
+import './cursor-pointer.css'
 
 import 'core-js/features/map'
 import 'core-js/features/set'
@@ -25,12 +26,13 @@ import Home from './panels/Home'
 import Friends from './panels/Friends'
 import Profile from './panels/Profile'
 
+import platformSwitch from './panels/_platformSwitch'
+
 import {
     vkUsersGet,
 } from './sociorate-api'
 
 import bridge from '@vkontakte/vk-bridge'
-
 
 function App() {
     const [isVKWebAppInitDone, setIsVKWebAppInitDone] = useState(false)
@@ -43,7 +45,9 @@ function App() {
 
     const [isSlideshowDone, setIsSlideshowDone] = useState(null)
 
-    const [activePanel, setActivePanel] = useState('loading')
+    const [isFetchUserFromLocationDone, setIsFetchUserFromLocationDone] = useState(false)
+
+    const [activePanel, setActivePanel] = useState(null)
     const [popout, setPopout] = useState(null)
 
     const [currentUser, setCurrentUser] = useState(null)
@@ -225,27 +229,26 @@ function App() {
         }
         fetchCurrentUser()
 
-        const fetchUserInLocationHash = async () => {
+        const fetchUserFromLocation = async () => {
             try {
                 let location = window.location.hash.substring(window.location.hash.indexOf('#') + 1)
                 let userid = location.substring(location.indexOf('@') + 1)
 
-                if (userid === '') {
-                    setActivePanel('home')
-                    return
-                }
+                if (userid !== '') {
+                    let user = (await vkUsersGet(userid))[0]
+                    if (!user) {
+                        throw new Error('`user` is empty')
+                    }
 
-                let user = (await vkUsersGet(userid))[0]
-                if (!user) {
-                    throw new Error('`user` is empty')
+                    setPanelProfileUser(user)
                 }
-
-                setPanelProfileUser(user)
             } catch (err) {
                 console.error(err)
+            } finally {
+                setIsFetchUserFromLocationDone(true)
             }
         }
-        fetchUserInLocationHash()
+        fetchUserFromLocation()
     }, [isVKWebAppInitDone])
 
     useEffect(() => {
@@ -261,6 +264,7 @@ function App() {
     }, [isSlideshowDone])
 
     const slideshowDoneCallback = useCallback(async () => {
+        setActivePanel('slideshow')
         setIsSlideshowDone(true)
 
         try {
@@ -270,16 +274,34 @@ function App() {
         }
     }, [])
 
+    let currentActivePanel = null
+
+    console.log(themeOption != null && isSlideshowDone != null && currentUser != null && isFetchUserFromLocationDone)
+
+    if (themeOption != null && isSlideshowDone != null && currentUser != null && isFetchUserFromLocationDone) {
+        if (isSlideshowDone) {
+            if (activePanel != null) {
+                currentActivePanel = activePanel
+            } else {
+                currentActivePanel = 'loading'
+            }
+        } else {
+            currentActivePanel = 'slideshow'
+        }
+    } else {
+        currentActivePanel = 'loading'
+    }
+
     return (
         <ConfigProvider
             isWebView={true}
             scheme={appScheme}
         >
             <View
-                activePanel={themeOption != null && isSlideshowDone != null && currentUser != null ? (isSlideshowDone ? activePanel : 'slideshow') : 'loading'}
+                activePanel={currentActivePanel}
                 popout={popout}
                 history={appViewHistory}
-                onSwipeBack={() => { goBack() }}
+                onSwipeBack={platformSwitch(['mobile_iphone', 'mobile_iphone_messenger'], () => goBack)}
             >
                 <Loading id='loading' />
 
@@ -289,7 +311,7 @@ function App() {
                 <Friends id='friends' go={go} goBack={goBack} />
                 <Profile id='profile' goBack={goBack} setPopout={setPopout} currentUser={currentUser} user={panelProfileUser} />
             </View>
-        </ConfigProvider>
+        </ConfigProvider >
     )
 }
 

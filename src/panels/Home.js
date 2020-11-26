@@ -146,6 +146,8 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 	const [userIDInput, setUserIDInput] = useState('')
 	const [lastProfilesView, setLastProfilesView] = useState(null)
 
+	const [enableButtonClean, setEnableButtonClean] = useState(false)
+
 	const [snackbar, setSnackbar] = useState(null)
 
 	const fetchCurrentUserRating = useCallback(async () => {
@@ -197,9 +199,11 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 			}
 
 			setLastProfilesView(<UsersList go={go} users={users} />)
+			setEnableButtonClean(true)
 		} catch (err) {
 			console.error(err)
 			setLastProfilesView(null)
+			setEnableButtonClean(false)
 			showErrorSnackbar(setSnackbar, 'Не удалось загрузить последние открытые профили')
 		}
 	}, [])
@@ -355,7 +359,7 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 					msUserSelect: 'none',
 					userSelect: 'none',
 				}}
-				aside={<Button
+				aside={enableButtonClean ? <Button
 					mode="tertiary"
 					onClick={() => {
 						setPopout(
@@ -366,10 +370,12 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 								actions={[{
 									title: 'Да',
 									autoclose: true,
+									mode: 'destructive',
 									action: async () => {
 										try {
 											await bridge.send('VKWebAppStorageSet', { key: 'last_viewed_profiles', value: "" })
 											setLastProfilesView(<LastViewedProfilesPlaceholder />)
+											setEnableButtonClean(false)
 										} catch (err) {
 											console.error(err)
 											showErrorSnackbar(setSnackbar, "Не удалось очистить список последних открытых профилей")
@@ -385,7 +391,7 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 							</Alert>
 						)
 					}}
-				>Очистить</Button>}
+				>Очистить</Button> : null}
 			>Последние открытые</Header>}>
 				{lastProfilesView}
 			</Group>

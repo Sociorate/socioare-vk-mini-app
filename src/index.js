@@ -38,7 +38,7 @@ function App() {
     const [appScheme, setAppScheme] = useState('bright_light')
     const [appViewHistory, setAppViewHistory] = useState(['home'])
 
-    const [autoTheme, setAutoTheme] = useState('light')
+    const [autoThemeOption, setAutoThemeOption] = useState('light')
     const [themeOption, setThemeOption] = useState(null)
 
     const [isSlideshowDone, setIsSlideshowDone] = useState(null)
@@ -73,17 +73,36 @@ function App() {
         console.log(appViewHistory)
 
         setActivePanel(panelid)
-    })
+    }, [])
 
     const go = useCallback((panelid, stateFields) => {
         let state = { ...stateFields, panelid: panelid }
         window.history.pushState(state, panelid)
         handleHistoryStateChange(state)
-    })
+    }, [])
 
     const goBack = useCallback(() => {
         window.history.back()
     }, [])
+
+    useEffect(() => {
+        let selectedTheme = null
+
+        if (themeOption == 'auto' || themeOption == null) {
+            selectedTheme = autoThemeOption
+        } else {
+            selectedTheme = themeOption
+        }
+
+
+        switch (selectedTheme) {
+            case 'dark':
+                setAppScheme('space_gray')
+                break
+            default:
+                setAppScheme('bright_light')
+        }
+    }, [autoThemeOption, themeOption])
 
     useEffect(() => {
         window.onpopstate = (event) => {
@@ -92,7 +111,7 @@ function App() {
 
         const handler = ({ detail: { type, data } }) => {
             if (type == 'VKWebAppUpdateConfig') {
-                setAutoTheme(data.scheme === 'space_gray' || data.scheme === 'client_dark' ? 'dark' : 'light')
+                setAutoThemeOption(data.scheme === 'space_gray' || data.scheme === 'client_dark' ? 'dark' : 'light')
             }
         }
 
@@ -125,25 +144,6 @@ function App() {
 
         return () => { bridge.unsubscribe(handler) }
     }, [])
-
-    useEffect(() => {
-        const changeTheme = (themeName) => {
-            switch (themeName) {
-                case 'dark':
-                    setAppScheme('space_gray')
-                    break
-                default:
-                    setAppScheme('bright_light')
-            }
-        }
-
-        if (themeOption === 'auto') {
-            changeTheme(autoTheme)
-            return
-        }
-
-        changeTheme(themeOption)
-    }, [autoTheme, themeOption])
 
     const changeThemeOption = useCallback(async (newThemeOption) => {
         setThemeOption(newThemeOption)

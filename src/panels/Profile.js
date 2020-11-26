@@ -424,6 +424,7 @@ function RatingCard({ ratingCounts }) {
 }
 
 function ShareAskButton({ setPopout, user }) {
+	// FIXME:
 	if (!NaN) return null
 
 	return (

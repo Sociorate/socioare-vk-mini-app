@@ -244,15 +244,15 @@ function App() {
                 }
             } catch (err) {
                 console.error(err)
-            } finally {
-                setIsFetchUserFromLocationDone(true)
             }
+
+            setIsFetchUserFromLocationDone(true)
         }
         fetchUserFromLocation()
     }, [isVKWebAppInitDone])
 
     useEffect(() => {
-        if (!isSlideshowDone) {
+        if (!isSlideshowDone || !isFetchUserFromLocationDone) {
             return
         }
 
@@ -261,7 +261,7 @@ function App() {
         } else {
             setActivePanel('home')
         }
-    }, [isSlideshowDone])
+    }, [isSlideshowDone, isFetchUserFromLocationDone])
 
     const slideshowDoneCallback = useCallback(async () => {
         setActivePanel('slideshow')
@@ -275,8 +275,6 @@ function App() {
     }, [])
 
     let currentActivePanel = null
-
-    console.log(themeOption != null && isSlideshowDone != null && currentUser != null && isFetchUserFromLocationDone)
 
     if (themeOption != null && isSlideshowDone != null && currentUser != null && isFetchUserFromLocationDone) {
         if (isSlideshowDone) {

@@ -299,7 +299,7 @@ function App() {
                 activePanel={currentActivePanel}
                 popout={popout}
                 history={appViewHistory}
-                onSwipeBack={platformSwitch(['mobile_iphone', 'mobile_iphone_messenger'], () => goBack)}
+                onSwipeBack={popout ? null : platformSwitch(['mobile_iphone', 'mobile_iphone_messenger'], () => goBack)}
             >
                 <Loading id='loading' />
 

@@ -286,10 +286,10 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 							} catch (err) {
 								if (err.error_data.error_code !== 4) {
 									console.error(err)
-									showErrorSnackbar(setSnackbar, 'Не удалось запустить сканер QR кода')
+									showErrorSnackbar(setSnackbar, 'Не удалось запустить сканер QR-кода')
 								}
 							}
-						}}>Открыть по QR коду</SimpleCell>
+						}}>Открыть по QR-коду</SimpleCell>
 				))}
 
 				<SimpleCell

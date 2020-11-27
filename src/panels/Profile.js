@@ -202,7 +202,17 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 				</div>
 			}
 		>
-			<Title level="2" weight="regular">{`${user.first_name} ${user.last_name}`}</Title>
+			<Title level="2" weight="regular" style={{
+				wordBreak: 'break-word',
+				whiteSpace: 'pre-line',
+				overflowWrap: 'break-word',
+				wordWrap:'break-word',
+				msWordBreak: 'break-word',
+				msHyphens: 'auto',
+				MozHyphens: 'auto',
+				WebkitHyphens: 'auto',
+				hyphens: 'auto',
+			}}>{`${user.first_name} ${user.last_name}`}</Title>
 		</RichCell >
 	)
 }

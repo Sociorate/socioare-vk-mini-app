@@ -74,8 +74,6 @@ function App() {
             setAppViewHistory([...appViewHistory, panelid])
         }
 
-        console.log(appViewHistory)
-
         setActivePanel(panelid)
     }, [])
 

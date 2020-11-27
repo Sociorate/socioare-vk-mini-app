@@ -54,9 +54,7 @@ function App() {
     const [panelProfileUser, setPanelProfileUser] = useState(null)
 
     const handleHistoryStateChange = useCallback((state) => {
-        if (popout != null) {
-            setPopout(null)
-        }
+        setPopout(null)
 
         let panelid = ""
 

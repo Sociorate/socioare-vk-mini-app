@@ -159,6 +159,7 @@ FriendsDisplay.propTypes = {
         first_name: PropTypes.string.isRequired,
         last_name: PropTypes.string.isRequired,
         photo_200: PropTypes.string.isRequired,
+        deactivated: PropTypes.string,
     })).isRequired
 }
 

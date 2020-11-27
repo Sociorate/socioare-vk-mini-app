@@ -64,8 +64,6 @@ import UsersList from './_UsersList'
 
 import platformSwitch from './_platformSwitch'
 
-// TODO: сделать вкладки сменяемыми свайпами
-
 function Home({ id, go, setPopout, changeThemeOption, currentUser }) {
 	if (currentUser == null) {
 		return <Panel id={id} />
@@ -245,6 +243,8 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 	return (
 		<PullToRefresh
 			onRefresh={async () => {
+				setSnackbar(null)
+				
 				setIsFetching(true)
 
 				let i = 0
@@ -412,55 +412,84 @@ ProfileSelection.propTypes = {
 		photo_200: PropTypes.string.isRequired,
 	}).isRequired,
 }
+let isAppInFavourites = (new URLSearchParams(window.location.search)).get('vk_is_favorite') == '1'
 
 function Other({ setPopout, changeThemeOption }) {
 	const [snackbar, setSnackbar] = useState(null)
+	const [isAddToHomeScreenDisabled, setIsAddToHomeScreenDisabled] = useState(false)
+	const [isAddToFavouritesDisabled, setIsAddToFavouritesDisabled] = useState(isAppInFavourites)
+	const [isOpenInAppDisabled, setIsOpenInAppDisabled] = useState(false)
 
 	return (
 		<Group>
 			{platformSwitch(['mobile_android'], () => (
-				<SimpleCell before={<Icon28HomeOutline />} onClick={async () => {
-					try {
-						await bridge.send("VKWebAppAddToHomeScreen")
-					} catch (err) {
-						if (err.error_data.error_code !== 4) {
-							console.error(err)
-							showErrorSnackbar(setSnackbar, 'Не удалось добавить приложение на главный экран')
-						}
-						return
+				<SimpleCell
+					disabled={isAddToHomeScreenDisabled}
+					before={
+						<Icon28HomeOutline style={{ color: isAddToHomeScreenDisabled ? 'var(--dynamic_gray)' : null }} />
 					}
-					showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate на главный экран!')
-				}}>Добавить на глав. экран</SimpleCell>
+					onClick={isAddToHomeScreenDisabled ? null : async () => {
+						try {
+							await bridge.send("VKWebAppAddToHomeScreen")
+						} catch (err) {
+							if (err.error_data.error_code !== 4) {
+								console.error(err)
+								showErrorSnackbar(setSnackbar, 'Не удалось добавить приложение на главный экран')
+							}
+							return
+						}
+
+						setIsAddToHomeScreenDisabled(true)
+
+						showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate на главный экран!')
+					}}>Добавить на глав. экран</SimpleCell>
 			))}
 
 			{platformSwitch(['mobile_android', 'mobile_iphone'], () => (
-				<SimpleCell before={<Icon28FavoriteOutline />} onClick={async () => {
-					try {
-						await bridge.send("VKWebAppAddToFavorites")
-					} catch (err) {
-						if (err.error_data.error_code !== 4) {
-							console.error(err)
-							showErrorSnackbar(setSnackbar, 'Не удалось добавить приложение в избранное')
-						}
-						return
+				<SimpleCell
+					disabled={isAddToFavouritesDisabled}
+					before={
+						<Icon28FavoriteOutline style={{ color: isAddToFavouritesDisabled ? 'var(--dynamic_gray)' : null }} />
 					}
-					showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate в избранное!')
-				}}>Добавить в избранное</SimpleCell>
+					onClick={isAddToFavouritesDisabled ? null : async () => {
+						try {
+							await bridge.send("VKWebAppAddToFavorites")
+						} catch (err) {
+							if (err.error_data.error_code !== 4) {
+								console.error(err)
+								showErrorSnackbar(setSnackbar, 'Не удалось добавить приложение в избранное')
+							}
+							return
+						}
+
+						isAppInFavourites = true
+						setIsAddToFavouritesDisabled(true)
+
+						showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate в избранное!')
+					}}>Добавить в избранное</SimpleCell>
 			))}
 
 			{platformSwitch(['mobile_web', 'desktop_web', 'mobile_android_messenger', 'mobile_iphone_messenger'], () => (
-				<SimpleCell before={<Icon28SmartphoneOutline />} onClick={async () => {
-					try {
-						await bridge.send("VKWebAppSendToClient")
-					} catch (err) {
-						if (err.error_data.error_code !== 4) {
-							console.error(err)
-							showErrorSnackbar(setSnackbar, 'Не удалось отправить уведомление')
-						}
-						return
+				<SimpleCell
+					disabled={isOpenInAppDisabled}
+					before={
+						<Icon28SmartphoneOutline style={{ color: isOpenInAppDisabled ? 'var(--dynamic_gray)' : null }} />
 					}
-					showSuccessSnackbar(setSnackbar, 'Уведомление отправлено!')
-				}}>Открыть в приложении ВК</SimpleCell>
+					onClick={isOpenInAppDisabled ? null : async () => {
+						try {
+							await bridge.send("VKWebAppSendToClient")
+						} catch (err) {
+							if (err.error_data.error_code !== 4) {
+								console.error(err)
+								showErrorSnackbar(setSnackbar, 'Не удалось отправить уведомление')
+							}
+							return
+						}
+
+						setIsOpenInAppDisabled(true)
+
+						showSuccessSnackbar(setSnackbar, 'Уведомление отправлено!')
+					}}>Открыть в приложении ВК</SimpleCell>
 			))}
 
 			<Separator />

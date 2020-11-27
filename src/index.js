@@ -185,12 +185,12 @@ function App() {
                 console.error(err)
             }
 
-            if (themeOptionData == null) {
+            if (themeOptionData == null || themeOptionData == '') {
                 setThemeOption('auto')
             } else {
                 setThemeOption(String(themeOptionData))
             }
-            if (isSlideshowDoneData == null) {
+            if (isSlideshowDoneData == null || isSlideshowDoneData == '') {
                 setIsSlideshowDone(false)
             } else {
                 setIsSlideshowDone(Boolean(isSlideshowDoneData))

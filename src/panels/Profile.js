@@ -56,7 +56,7 @@ import DislikeEmoji from '../openmoji-edited/1F627.svg'
 import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок для версии vk.com и m.vk.com
-// TODO: кнопка поделиться в истории внизу профиля в моде простого текста (tertiary?)
+// TODO: кнопка поделиться в истории внизу профиля в моде простого текста
 
 function Profile({ id, goBack, setPopout, currentUser, user }) {
 	if (currentUser == null) {
@@ -66,7 +66,7 @@ function Profile({ id, goBack, setPopout, currentUser, user }) {
 	const [snackbar, setSnackbar] = useState(null)
 
 	useEffect(() => {
-		if (user == null) {
+		if (user == null || user.id == currentUser.id) {
 			return
 		}
 
@@ -122,6 +122,7 @@ Profile.propTypes = {
 		first_name: PropTypes.string.isRequired,
 		last_name: PropTypes.string.isRequired,
 		photo_200: PropTypes.string.isRequired,
+		deactivated: PropTypes.string,
 	})
 }
 
@@ -263,10 +264,10 @@ function RatingButtons({ userid, setSnackbar, fetchRating }) {
 			let msg = ""
 			switch (err.error_code) {
 				case 98765:
-					msg = "Во избежания флуда, оценивать можно 9 раз в 24 часа"
+					msg = "Во избежание флуда, оценивать можно 9 раз в 24 часа"
 					break
 				case 4321:
-					msg = "Во избежания флуда, оценивать одного человека можно 2 раза в 24 часа"
+					msg = "Во избежание флуда, оценивать одного человека можно 2 раза в 24 часа"
 					break
 				default:
 					console.error(err)
@@ -527,6 +528,8 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 	return (
 		<PullToRefresh
 			onRefresh={async () => {
+				setSnackbar(null)
+
 				setIsFetching(true)
 				fetchAds()
 				await fetchRating()
@@ -536,7 +539,7 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 		>
 			<UserProfileRichCell setPopout={setPopout} setSnackbar={setSnackbar} user={user} />
 
-			{currentUser.id !== user.id ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} fetchRating={fetchRating} /> : null}
+			{currentUser.id !== user.id && user.deactivated != 'deleted' ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} fetchRating={fetchRating} /> : null}
 
 			{promoBanner}
 
@@ -559,6 +562,7 @@ UserProfile.propTypes = {
 		first_name: PropTypes.string.isRequired,
 		last_name: PropTypes.string.isRequired,
 		photo_200: PropTypes.string.isRequired,
+		deactivated: PropTypes.string,
 	}).isRequired,
 }
 

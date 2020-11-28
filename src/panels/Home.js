@@ -244,7 +244,7 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 		<PullToRefresh
 			onRefresh={async () => {
 				setSnackbar(null)
-				
+
 				setIsFetching(true)
 
 				let i = 0
@@ -368,7 +368,11 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 									setPopout(null)
 								}}
 								actions={[{
-									title: 'Да',
+									title: "Отмена",
+									autoclose: true,
+									mode: 'cancel',
+								}, {
+									title: 'Очистить',
 									autoclose: true,
 									mode: 'destructive',
 									action: async () => {
@@ -381,10 +385,6 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 											showErrorSnackbar(setSnackbar, "Не удалось очистить список последних открытых профилей")
 										}
 									}
-								}, {
-									title: "Отмена",
-									autoclose: true,
-									mode: 'cancel',
 								}]}
 							>
 								<Text>Вы уверены, что хотите очистить список последних открытых профилей?</Text>

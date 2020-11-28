@@ -70,15 +70,16 @@ function Home({ id, go, setPopout, changeThemeOption, currentUser }) {
 	}
 
 	const [currentTab, setCurrentTab] = useState('profile_selection')
+	const [snackbar, setSnackbar] = useState(null)
 
 	let view = null
 
 	switch (currentTab) {
 		case 'profile_selection':
-			view = <ProfileSelection go={go} setPopout={setPopout} currentUser={currentUser} />
+			view = <ProfileSelection go={go} setSnackbar={setSnackbar} setPopout={setPopout} currentUser={currentUser} />
 			break
 		case 'other':
-			view = <Other setPopout={setPopout} changeThemeOption={changeThemeOption} />
+			view = <Other setSnackbar={setSnackbar} setPopout={setPopout} changeThemeOption={changeThemeOption} />
 			break
 		default:
 			view = null
@@ -110,6 +111,8 @@ function Home({ id, go, setPopout, changeThemeOption, currentUser }) {
 			</Tabs>
 
 			{view}
+
+			{snackbar}
 		</Panel>
 	)
 }
@@ -139,7 +142,7 @@ function LastViewedProfilesPlaceholder() {
 
 let lastUserIDInput = ''
 
-function ProfileSelection({ go, setPopout, currentUser }) {
+function ProfileSelection({ go, setSnackbar, setPopout, currentUser }) {
 	const [isFetching, setIsFetching] = useState(false)
 
 	const [currentUserAverageRatingEmoji, setCurrentUserAverageRatingEmoji] = useState(null)
@@ -147,8 +150,6 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 	const [lastProfilesView, setLastProfilesView] = useState(null)
 
 	const [enableButtonClean, setEnableButtonClean] = useState(false)
-
-	const [snackbar, setSnackbar] = useState(null)
 
 	useEffect(() => {
 		lastUserIDInput = userIDInput
@@ -408,13 +409,13 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 				{lastProfilesView}
 			</Group>
 
-			{snackbar}
 		</PullToRefresh>
 	)
 }
 
 ProfileSelection.propTypes = {
 	go: PropTypes.func.isRequired,
+	setSnackbar: PropTypes.func.isRequired,
 	setPopout: PropTypes.func.isRequired,
 	currentUser: PropTypes.shape({
 		id: PropTypes.number.isRequired,
@@ -426,8 +427,7 @@ ProfileSelection.propTypes = {
 }
 let isAppInFavourites = (new URLSearchParams(window.location.search)).get('vk_is_favorite') == '1'
 
-function Other({ setPopout, changeThemeOption }) {
-	const [snackbar, setSnackbar] = useState(null)
+function Other({ setSnackbar, setPopout, changeThemeOption }) {
 	const [isAddToHomeScreenDisabled, setIsAddToHomeScreenDisabled] = useState(false)
 	const [isAddToFavouritesDisabled, setIsAddToFavouritesDisabled] = useState(isAppInFavourites)
 	const [isOpenInAppDisabled, setIsOpenInAppDisabled] = useState(false)
@@ -537,13 +537,12 @@ function Other({ setPopout, changeThemeOption }) {
 			</SimpleCell>
 
 			<Footer>В этом приложении используются (С ИЗМЕНЕНИЯМИ) эмодзи <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> – проект свободных эмодзи и иконок. Лицензия: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link><br />In this app are used (WITH CHANGES) <Link href='https://openmoji.org/' target='_blank'>OpenMoji</Link> emojis – the open-source emoji and icon project. License: <Link href='https://creativecommons.org/licenses/by-sa/4.0/#' target='_blank'>CC BY-SA 4.0</Link></Footer>
-
-			{snackbar}
 		</Group>
 	)
 }
 
 Other.propTypes = {
+	setSnackbar: PropTypes.func.isRequired,
 	setPopout: PropTypes.func.isRequired,
 	changeThemeOption: PropTypes.func.isRequired,
 }

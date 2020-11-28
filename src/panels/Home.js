@@ -137,16 +137,22 @@ function LastViewedProfilesPlaceholder() {
 	)
 }
 
+let lastUserIDInput = ''
+
 function ProfileSelection({ go, setPopout, currentUser }) {
 	const [isFetching, setIsFetching] = useState(false)
 
 	const [currentUserAverageRatingEmoji, setCurrentUserAverageRatingEmoji] = useState(null)
-	const [userIDInput, setUserIDInput] = useState('')
+	const [userIDInput, setUserIDInput] = useState(lastUserIDInput)
 	const [lastProfilesView, setLastProfilesView] = useState(null)
 
 	const [enableButtonClean, setEnableButtonClean] = useState(false)
 
 	const [snackbar, setSnackbar] = useState(null)
+
+	useEffect(() => {
+		lastUserIDInput = userIDInput
+	}, [userIDInput])
 
 	const fetchCurrentUserRating = useCallback(async () => {
 		try {
@@ -336,9 +342,15 @@ function ProfileSelection({ go, setPopout, currentUser }) {
 					}}>Выбрать из друзей</SimpleCell>
 
 				<FormLayout>
-					<Input top='По @ID или ссылке ВК/Sociorate' value={userIDInput} onChange={(event) => {
-						setUserIDInput(event.target.value)
-					}} type='text' placeholder='Введите ID или ссылку' />
+					<Input
+						top='По @ID или ссылке ВК/Sociorate'
+						value={userIDInput}
+						onChange={(event) => {
+							setUserIDInput(event.target.value)
+						}}
+						type='text'
+						placeholder='Введите ID или ссылку'
+					/>
 					<Button size='xl' onClick={async () => {
 						if (userIDInput === '') {
 							showErrorSnackbar(setSnackbar, 'Введите ID или ссылку ВК/Sociorate.')

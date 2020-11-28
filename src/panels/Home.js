@@ -140,20 +140,24 @@ function LastViewedProfilesPlaceholder() {
 	)
 }
 
-let lastUserIDInput = ''
+let prevUserIDInput = ''
+let prevLastProfilesView = null
 
 function ProfileSelection({ go, setSnackbar, setPopout, currentUser }) {
 	const [isFetching, setIsFetching] = useState(false)
 
 	const [currentUserAverageRatingEmoji, setCurrentUserAverageRatingEmoji] = useState(null)
-	const [userIDInput, setUserIDInput] = useState(lastUserIDInput)
-	const [lastProfilesView, setLastProfilesView] = useState(null)
+	const [userIDInput, setUserIDInput] = useState(prevUserIDInput)
+	const [lastProfilesView, setLastProfilesView] = useState(prevLastProfilesView)
 
 	const [enableButtonClean, setEnableButtonClean] = useState(false)
 
 	useEffect(() => {
-		lastUserIDInput = userIDInput
+		prevUserIDInput = userIDInput
 	}, [userIDInput])
+	useEffect(() => {
+		prevLastProfilesView = lastProfilesView
+	}, [lastProfilesView])
 
 	const fetchCurrentUserRating = useCallback(async () => {
 		try {
@@ -178,7 +182,9 @@ function ProfileSelection({ go, setSnackbar, setPopout, currentUser }) {
 
 	const fetchLastViewedProfiles = useCallback(async () => {
 		try {
-			setLastProfilesView(<PanelSpinner />)
+			if (lastProfilesView == null) {
+				setLastProfilesView(<PanelSpinner />)
+			}
 
 			let userids = String((await bridge.send('VKWebAppStorageGet', { keys: ['last_viewed_profiles'] })).keys[0].value)
 			if (userids === '') {

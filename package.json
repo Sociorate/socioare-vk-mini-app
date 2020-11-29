@@ -20,15 +20,15 @@
     "eslint": "^7.14.0",
     "eslint-plugin-react": "^7.21.5",
     "react-hot-loader": "^4.13.0",
-    "react-scripts": "^4.0.0"
+    "react-scripts": "^4.0.1"
   },
   "dependencies": {
-    "@vkontakte/icons": "^1.55.0",
+    "@vkontakte/icons": "^1.59.0",
     "@vkontakte/vk-bridge": "^2.3.0",
     "@vkontakte/vk-qr": "^2.0.10",
-    "@vkontakte/vkui": "^3.13.1",
+    "@vkontakte/vkui": "^3.13.2",
     "chalk": "^4.1.0",
-    "core-js": "^3.7.0",
+    "core-js": "^3.8.0",
     "eruda": "^2.4.1",
     "eruda-code": "^2.0.0",
     "eruda-dom": "^2.0.0",

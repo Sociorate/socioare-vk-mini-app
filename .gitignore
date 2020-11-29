@@ -8,6 +8,8 @@ npm-debug.log*
 # Optional npm cache directory
 .npm
 
+.eslintcache
+
 # Prod Bundle
 /build
 bundle.zip

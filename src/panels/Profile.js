@@ -435,6 +435,8 @@ function RatingCard({ ratingCounts }) {
 
 // TODO: сделать возможность поделиться числами рейтинга и возможность запостить в профиле (не только в истории)
 function ShareStoryButton({ setSnackbar, user }) {
+	if (!NaN) return null
+
 	return (
 		<Footer><Button mode='tertiary' onClick={async () => {
 			try {

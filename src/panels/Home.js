@@ -142,6 +142,7 @@ function LastViewedProfilesPlaceholder() {
 
 let prevUserIDInput = ''
 let prevLastProfilesView = null
+let prevEnableButtonClean = null
 
 function ProfileSelection({ go, setSnackbar, setPopout, currentUser }) {
 	const [isFetching, setIsFetching] = useState(false)
@@ -150,7 +151,7 @@ function ProfileSelection({ go, setSnackbar, setPopout, currentUser }) {
 	const [userIDInput, setUserIDInput] = useState(prevUserIDInput)
 	const [lastProfilesView, setLastProfilesView] = useState(prevLastProfilesView)
 
-	const [enableButtonClean, setEnableButtonClean] = useState(false)
+	const [enableButtonClean, setEnableButtonClean] = useState(prevEnableButtonClean)
 
 	useEffect(() => {
 		prevUserIDInput = userIDInput
@@ -158,6 +159,9 @@ function ProfileSelection({ go, setSnackbar, setPopout, currentUser }) {
 	useEffect(() => {
 		prevLastProfilesView = lastProfilesView
 	}, [lastProfilesView])
+	useEffect(() => {
+		prevEnableButtonClean = enableButtonClean
+	}, [enableButtonClean])
 
 	const fetchCurrentUserRating = useCallback(async () => {
 		try {
@@ -450,17 +454,16 @@ function Other({ setSnackbar, setPopout, changeThemeOption }) {
 					onClick={isAddToHomeScreenDisabled ? null : async () => {
 						try {
 							await bridge.send("VKWebAppAddToHomeScreen")
+
+							setIsAddToHomeScreenDisabled(true)
+
+							showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate на главный экран!')
 						} catch (err) {
 							if (err.error_data.error_code !== 4) {
 								console.error(err)
 								showErrorSnackbar(setSnackbar, 'Не удалось добавить приложение на главный экран')
 							}
-							return
 						}
-
-						setIsAddToHomeScreenDisabled(true)
-
-						showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate на главный экран!')
 					}}>Добавить на глав. экран</SimpleCell>
 			))}
 
@@ -473,18 +476,17 @@ function Other({ setSnackbar, setPopout, changeThemeOption }) {
 					onClick={isAddToFavouritesDisabled ? null : async () => {
 						try {
 							await bridge.send("VKWebAppAddToFavorites")
+
+							isAppInFavourites = true
+							setIsAddToFavouritesDisabled(true)
+
+							showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate в избранное!')
 						} catch (err) {
 							if (err.error_data.error_code !== 4) {
 								console.error(err)
 								showErrorSnackbar(setSnackbar, 'Не удалось добавить приложение в избранное')
 							}
-							return
 						}
-
-						isAppInFavourites = true
-						setIsAddToFavouritesDisabled(true)
-
-						showSuccessSnackbar(setSnackbar, 'Спасибо, что добавили Sociorate в избранное!')
 					}}>Добавить в избранное</SimpleCell>
 			))}
 
@@ -497,17 +499,14 @@ function Other({ setSnackbar, setPopout, changeThemeOption }) {
 					onClick={isOpenInAppDisabled ? null : async () => {
 						try {
 							await bridge.send("VKWebAppSendToClient")
+							showSuccessSnackbar(setSnackbar, 'Уведомление успешно отправлено!')
+							setIsOpenInAppDisabled(true)
 						} catch (err) {
 							if (err.error_data.error_code !== 4) {
 								console.error(err)
 								showErrorSnackbar(setSnackbar, 'Не удалось отправить уведомление')
 							}
-							return
 						}
-
-						setIsOpenInAppDisabled(true)
-
-						showSuccessSnackbar(setSnackbar, 'Уведомление отправлено!')
 					}}>Открыть в приложении ВК</SimpleCell>
 			))}
 

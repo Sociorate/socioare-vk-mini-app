@@ -512,7 +512,7 @@ function ShareStoryButton({ setSnackbar, user }) {
 					showErrorSnackbar(setSnackbar, 'Не удалось открыть редактор истории')
 				}
 			}
-		}}>Поделиться рейтингом</Button></Footer >
+		}}>Поделиться в истории</Button></Footer >
 	)
 }
 

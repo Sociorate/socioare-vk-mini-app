@@ -431,6 +431,7 @@ ProfileSelection.propTypes = {
 		photo_200: PropTypes.string.isRequired,
 	}).isRequired,
 }
+
 let isAppInFavourites = (new URLSearchParams(window.location.search)).get('vk_is_favorite') == '1'
 
 function Other({ setSnackbar, setPopout, changeThemeOption }) {

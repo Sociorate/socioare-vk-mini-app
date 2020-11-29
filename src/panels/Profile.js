@@ -33,6 +33,8 @@ import {
 	Icon24Link,
 } from '@vkontakte/icons'
 
+import platformSwitch from './_platformSwitch'
+
 import bridge from '@vkontakte/vk-bridge'
 
 import {
@@ -435,8 +437,6 @@ function RatingCard({ ratingCounts }) {
 
 // TODO: сделать возможность поделиться числами рейтинга и возможность запостить в профиле (не только в истории)
 function ShareStoryButton({ setSnackbar, user }) {
-	if (!NaN) return null
-
 	return (
 		<Footer><Button mode='tertiary' onClick={async () => {
 			try {
@@ -453,7 +453,7 @@ function ShareStoryButton({ setSnackbar, user }) {
 				await bridge.send('VKWebAppShowStoryBox', {
 					background_type: 'image',
 					// FIXME: найти более адекватный способ хранить фоновое изображение
-					url: 'https://sun9-25.userapi.com/impg/1KpId_whyeGZbsskmTKy1WBQ0dEH2j0HC70YoQ/_ZtWncKGasQ.jpg?size=1080x1920&quality=96&proxy=1&sign=194a58123d9879f6f9367be1e5991a60',
+					url: 'https://sun9-49.userapi.com/impg/nxtfau0S94FKXr_PRUEKhzUv-flrSWgweaXoEg/s26lvMbIss8.jpg?size=1080x1920&quality=96&proxy=1&sign=078f734d3a6907633d885b9487a999dd',
 					locked: true,
 					attachment: {
 						type: 'url',
@@ -470,6 +470,7 @@ function ShareStoryButton({ setSnackbar, user }) {
 								relation_width: 0.5,
 								gravity: 'center_top',
 								translation_y: 0.175,
+								rotation: 2.5
 							},
 							clickable_zones: [{
 								action_type: 'link',
@@ -486,9 +487,9 @@ function ShareStoryButton({ setSnackbar, user }) {
 							content_type: 'image',
 							blob: qrDataURI,
 							transform: {
-								relation_width: 0.7,
+								relation_width: 0.625,
 								gravity: 'center_bottom',
-								translation_y: -0.1,
+								translation_y: -0.105,
 							},
 							clickable_zones: [{
 								action_type: 'app',
@@ -591,7 +592,9 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 
 			{ratingCard}
 
-			{<ShareStoryButton setSnackbar={setSnackbar} user={user} ratingCounts={ratingCounts} />}
+			{platformSwitch(['desktop_web'], () => (
+				<ShareStoryButton setSnackbar={setSnackbar} user={user} ratingCounts={ratingCounts} />
+			))}
 		</PullToRefresh>
 	)
 }

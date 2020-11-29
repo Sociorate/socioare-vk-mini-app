@@ -151,13 +151,14 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 					}}><Icon24ShareOutline /></Button>
 
 					<Button mode='tertiary' stretched onClick={() => {
-						const targetstr = `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}`
+						const profileurl = `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}`
 
-						let svgstr = vkQr.createQR(targetstr, {
+						let svgstr = vkQr.createQR(profileurl, {
 							qrSize: 457,
 							isShowLogo: true,
 							ecc: 2,
 						})
+
 						let svgdataurl = `data:image/svg+xml,${encodeURIComponent(svgstr)}`
 
 						setPopout(
@@ -167,15 +168,14 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 									autoclose: true,
 									action: async () => {
 										try {
-											await bridge.send("VKWebAppCopyText", { "text": targetstr })
+											await bridge.send("VKWebAppCopyText", { text: profileurl })
+											showSuccessSnackbar(setSnackbar, 'Ссылка скопирована в буфер обмена!')
 										} catch (err) {
 											if (err.error_data.error_code !== 4) {
 												console.error(err)
 												showErrorSnackbar(setSnackbar, 'Не удалось скопировать ссылку')
-												return
 											}
 										}
-										showSuccessSnackbar(setSnackbar, 'Ссылка скопирована в буфер обмена!')
 									}
 								}, {
 									title: 'Отмена',
@@ -185,8 +185,7 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 								onClose={() => { setPopout(null) }}
 							>
 								<img
-									id={`qr_code_${user.id}`}
-									alt={targetstr}
+									alt={profileurl}
 									src={svgdataurl}
 									style={{
 										width: '96%',
@@ -206,7 +205,7 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 				wordBreak: 'break-word',
 				whiteSpace: 'pre-line',
 				overflowWrap: 'break-word',
-				wordWrap:'break-word',
+				wordWrap: 'break-word',
 				msWordBreak: 'break-word',
 				msHyphens: 'auto',
 				MozHyphens: 'auto',
@@ -434,25 +433,60 @@ function RatingCard({ ratingCounts }) {
 	return ratingCard
 }
 
-function ShareAskButton({ setPopout, user }) {
-	// FIXME:
-	if (!NaN) return null
-
+// TODO: сделать возможность поделиться числами рейтинга и возможность запостить в профиле (не только в истории)
+function ShareStoryButton({ setSnackbar, user }) {
 	return (
 		<Footer><Button mode='tertiary' onClick={async () => {
-			setPopout(
+			try {
+				const profileurl = `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}`
+
+				let svgstr = vkQr.createQR(profileurl, {
+					qrSize: 457,
+					isShowLogo: true,
+					ecc: 2,
+				})
+
+				let qrDataURI = `data:image/svg+xml;base64,${btoa(svgstr)}`
+
 				await bridge.send('VKWebAppShowStoryBox', {
 					background_type: 'image',
-					url: "https://sun9-65.userapi.com/c850136/v850136098/1b77eb/0YK6suXkY24.jpg",
+					// FIXME: найти более адекватный способ хранить фоновое изображение
+					url: 'https://sun9-25.userapi.com/impg/1KpId_whyeGZbsskmTKy1WBQ0dEH2j0HC70YoQ/_ZtWncKGasQ.jpg?size=1080x1920&quality=96&proxy=1&sign=194a58123d9879f6f9367be1e5991a60',
 					locked: true,
+					attachment: {
+						type: 'url',
+						text: 'go_to',
+						url: `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}`,
+					},
 					stickers: [{
 						sticker_type: 'renderable',
 						sticker: {
+							can_delete: false,
 							content_type: 'image',
-							url: 'https://sun9-65.userapi.com/c850136/v850136098/1b77eb/0YK6suXkY24.jpg',
+							url: user.photo_200,
 							transform: {
-								relation_width: 0.25,
+								relation_width: 0.5,
+								gravity: 'center_top',
+								translation_y: 0.175,
+							},
+							clickable_zones: [{
+								action_type: 'link',
+								action: {
+									link: profileurl,
+									tooltip_text_key: 'tooltip_open_page',
+								},
+							}],
+						},
+					}, {
+						sticker_type: 'renderable',
+						sticker: {
+							can_delete: false,
+							content_type: 'image',
+							blob: qrDataURI,
+							transform: {
+								relation_width: 0.7,
 								gravity: 'center_bottom',
+								translation_y: -0.1,
 							},
 							clickable_zones: [{
 								action_type: 'app',
@@ -460,34 +494,34 @@ function ShareAskButton({ setPopout, user }) {
 									app_id: 7607943,
 									app_context: String(user.id),
 								},
-								clickable_area: [{
-									x: 0,
-									y: 0,
-								}, {
-									x: 1,
-									y: 0,
-								}, {
-									x: 1,
-									y: 1,
-								}, {
-									x: 0,
-									y: 1,
-								}]
+							}, {
+								action_type: 'link',
+								action: {
+									link: profileurl,
+									tooltip_text_key: 'tooltip_open_page',
+								},
 							}],
-							can_delete: false,
-						}
+						},
 					}]
 				})
-			)
-		}}>Поделиться рейтингом и ссылкой</Button></Footer >
+
+				showSuccessSnackbar(setSnackbar, "История успешно опубликована!")
+			} catch (err) {
+				if (err.error_data.error_code !== 4) {
+					console.error(err)
+					showErrorSnackbar(setSnackbar, 'Не удалось открыть редактор истории')
+				}
+			}
+		}}>Поделиться рейтингом</Button></Footer >
 	)
 }
 
-ShareAskButton.propTypes = {
-	setPopout: PropTypes.func.isRequired,
+ShareStoryButton.propTypes = {
+	setSnackbar: PropTypes.func.isRequired,
 	user: PropTypes.shape({
 		id: PropTypes.number.isRequired,
 		screen_name: PropTypes.string.isRequired,
+		photo_200: PropTypes.string.isRequired,
 	}).isRequired,
 }
 
@@ -555,7 +589,7 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 
 			{ratingCard}
 
-			{<ShareAskButton setPopout={setPopout} user={user} ratingCounts={ratingCounts} />}
+			{<ShareStoryButton setSnackbar={setSnackbar} user={user} ratingCounts={ratingCounts} />}
 		</PullToRefresh>
 	)
 }

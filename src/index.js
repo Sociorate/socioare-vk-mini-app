@@ -229,10 +229,12 @@ function App() {
         }
         fetchCurrentUser()
 
-        const fetchUserFromLocation = async () => {
+        // TODO: хэднлить vk_ref (с котекстом из истории) когда пофиксят
+
+        const fetchUserIDInLocationHash = async (lochash) => {
             try {
-                let location = window.location.hash.substring(window.location.hash.indexOf('#') + 1)
-                let userid = location.substring(location.indexOf('@') + 1)
+                let loc = lochash.substring(lochash.indexOf('#') + 1)
+                let userid = loc.substring(loc.indexOf('@') + 1)
 
                 if (userid !== '') {
                     let user = (await vkUsersGet(userid))[0]
@@ -248,7 +250,17 @@ function App() {
 
             setIsFetchUserFromLocationDone(true)
         }
-        fetchUserFromLocation()
+        fetchUserIDInLocationHash(window.location.hash)
+
+        const handler = ({ detail: { type, data } }) => {
+            if (type == 'VKWebAppLocationChanged') {
+                fetchUserIDInLocationHash(data.location)
+            }
+        }
+
+        bridge.subscribe(handler)
+
+        return () => { bridge.unsubscribe(handler) }
     }, [isVKWebAppInitDone])
 
     useEffect(() => {

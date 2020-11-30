@@ -464,7 +464,7 @@ function ShareStoryButton({ setSnackbar, user }) {
 					locked: true,
 					attachment: {
 						type: 'url',
-						text: 'go_to',
+						text: 'open',
 						url: `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}`,
 					},
 					stickers: [{

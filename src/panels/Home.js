@@ -10,7 +10,6 @@ import {
 	Panel,
 	PanelHeader,
 	PanelHeaderContent,
-	PullToRefresh,
 	Button,
 	Input,
 	FormLayout,
@@ -140,19 +139,21 @@ function LastViewedProfilesPlaceholder() {
 	)
 }
 
+let prevCurrentUserAverageRatingEmoji = null
 let prevUserIDInput = ''
 let prevLastProfilesView = null
 let prevEnableButtonClean = null
 
 function ProfileSelection({ go, setSnackbar, setPopout, currentUser }) {
-	const [isFetching, setIsFetching] = useState(false)
-
-	const [currentUserAverageRatingEmoji, setCurrentUserAverageRatingEmoji] = useState(null)
+	const [currentUserAverageRatingEmoji, setCurrentUserAverageRatingEmoji] = useState(prevCurrentUserAverageRatingEmoji)
 	const [userIDInput, setUserIDInput] = useState(prevUserIDInput)
 	const [lastProfilesView, setLastProfilesView] = useState(prevLastProfilesView)
 
 	const [enableButtonClean, setEnableButtonClean] = useState(prevEnableButtonClean)
 
+	useEffect(() => {
+		prevCurrentUserAverageRatingEmoji = currentUserAverageRatingEmoji
+	}, [currentUserAverageRatingEmoji])
 	useEffect(() => {
 		prevUserIDInput = userIDInput
 	}, [userIDInput])
@@ -165,8 +166,6 @@ function ProfileSelection({ go, setSnackbar, setPopout, currentUser }) {
 
 	const fetchCurrentUserRating = useCallback(async () => {
 		try {
-			setCurrentUserAverageRatingEmoji(null)
-
 			let ratingCounts = (await getRating(currentUser.id)).rating_counts
 
 			let [averageRating, averageRatingEmoji] = createAverageRating(ratingCounts)
@@ -258,25 +257,7 @@ function ProfileSelection({ go, setSnackbar, setPopout, currentUser }) {
 	}, [])
 
 	return (
-		<PullToRefresh
-			onRefresh={async () => {
-				setSnackbar(null)
-
-				setIsFetching(true)
-
-				let i = 0
-				const done = () => {
-					i++
-					if (i == 2) {
-						setIsFetching(false)
-					}
-				}
-
-				fetchCurrentUserRating().then(() => { done() })
-				fetchLastViewedProfiles().then(() => { done() })
-			}}
-			isFetching={isFetching}
-		>
+		<React.Fragment>
 			<Group separator={false}>
 				<RichCell
 					style={{ borderRadius: 'inherit' }}
@@ -418,8 +399,7 @@ function ProfileSelection({ go, setSnackbar, setPopout, currentUser }) {
 			>Последние открытые</Header>}>
 				{lastProfilesView}
 			</Group>
-
-		</PullToRefresh>
+		</React.Fragment>
 	)
 }
 

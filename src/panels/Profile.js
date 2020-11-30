@@ -44,6 +44,8 @@ import {
 
 import vkQr from '@vkontakte/vk-qr'
 
+import { svgAsPngUri } from 'save-svg-as-png'
+
 import {
 	showErrorSnackbar,
 	showSuccessSnackbar,
@@ -435,7 +437,7 @@ function RatingCard({ ratingCounts }) {
 	return ratingCard
 }
 
-// TODO: сделать возможность поделиться числами рейтинга и возможность запостить в профиле (не только в истории)
+// TODO: сделать возможность поделиться числами рейтинга и вместе с этим возможность запостить (не только история)
 function ShareStoryButton({ setSnackbar, user }) {
 	return (
 		<Footer><Button mode='tertiary' onClick={async () => {
@@ -448,7 +450,12 @@ function ShareStoryButton({ setSnackbar, user }) {
 					ecc: 2,
 				})
 
-				let qrDataURI = `data:image/svg+xml;base64,${btoa(svgstr)}`
+				let svgel = document.createElement('span')
+				svgel.innerHTML = svgstr
+
+				let qrDataURI = await svgAsPngUri(svgel.lastChild)
+
+				svgel.remove()
 
 				await bridge.send('VKWebAppShowStoryBox', {
 					background_type: 'image',
@@ -592,6 +599,7 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 
 			{ratingCard}
 
+			{/* {platformSwitch(['desktop_web', 'mobile_android', 'mobile_iphone'], () => ( */}
 			{platformSwitch(['desktop_web'], () => (
 				<ShareStoryButton setSnackbar={setSnackbar} user={user} ratingCounts={ratingCounts} />
 			))}

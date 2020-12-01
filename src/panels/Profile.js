@@ -145,7 +145,7 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 
 					<Button mode='tertiary' stretched onClick={async () => {
 						try {
-							await bridge.send('VKWebAppShare', { link: `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}` })
+							await bridge.send('VKWebAppShare', { link: `https://vk.com/sociorateapp#@${user.screen_name ? user.screen_name : `id${user.id}`}` })
 						} catch (err) {
 							if (err.error_data.error_code !== 4) {
 								console.error(err)
@@ -155,7 +155,7 @@ function UserProfileRichCell({ setPopout, setSnackbar, user }) {
 					}}><Icon24ShareOutline /></Button>
 
 					<Button mode='tertiary' stretched onClick={() => {
-						const profileurl = `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}`
+						const profileurl = `https://vk.com/sociorateapp#@${user.screen_name ? user.screen_name : `id${user.id}`}`
 
 						let svgstr = vkQr.createQR(profileurl, {
 							qrSize: 457,
@@ -442,7 +442,7 @@ function ShareStoryButton({ setSnackbar, user }) {
 	return (
 		<Footer><Button mode='tertiary' onClick={async () => {
 			try {
-				const profileurl = `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}`
+				const profileurl = `https://vk.com/sociorateapp#@${user.screen_name ? user.screen_name : `id${user.id}`}`
 
 				let svgstr = vkQr.createQR(profileurl, {
 					qrSize: 457,
@@ -465,7 +465,7 @@ function ShareStoryButton({ setSnackbar, user }) {
 					attachment: {
 						type: 'url',
 						text: 'open',
-						url: `https://vk.com/app7607943#@${user.screen_name ? user.screen_name : `id${user.id}`}`,
+						url: `https://vk.com/sociorateapp#@${user.screen_name ? user.screen_name : `id${user.id}`}`,
 					},
 					stickers: [{
 						sticker_type: 'renderable',

@@ -495,7 +495,7 @@ function Other({ setSnackbar, setPopout, changeThemeOption }) {
 			<SimpleCell
 				href='https://vk.com/sociorate' target='_blank'
 				before={<Icon28LogoVkOutline />}
-				description="Следите за новостями!"
+				description="Подпишитесь, ничего не пропускайте!"
 			>Паблик Sociorate</SimpleCell>
 
 			<SimpleCell

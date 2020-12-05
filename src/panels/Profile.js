@@ -325,7 +325,7 @@ RatingButtons.propTypes = {
 	fetchRating: PropTypes.func.isRequired,
 }
 
-function RatingCardBar({ imageSrc, imageAlt, color, count, biggestCount }) {
+function RatingCardBar({ emojiSrc, emojiAlt, color, count, biggestCount }) {
 	return (
 		<div style={{
 			height: '28px',
@@ -334,7 +334,7 @@ function RatingCardBar({ imageSrc, imageAlt, color, count, biggestCount }) {
 			<img style={{
 				height: '28px',
 				flex: '10%',
-			}} src={imageSrc} alt={imageAlt} />
+			}} src={emojiSrc} alt={emojiAlt} />
 
 			<div style={{
 				height: '20px',
@@ -359,10 +359,10 @@ function RatingCardBar({ imageSrc, imageAlt, color, count, biggestCount }) {
 			<Subhead
 				weight="regular"
 				style={{
-					height: '19px',
-					paddingTop: '4.5px',
+					height: '20px',
+					paddingTop: '4px',
 					flex: '10%',
-					textAlign: 'right',
+					textAlign: 'end',
 				}}
 			>{count}</Subhead>
 		</div>
@@ -370,8 +370,8 @@ function RatingCardBar({ imageSrc, imageAlt, color, count, biggestCount }) {
 }
 
 RatingCardBar.propTypes = {
-	imageSrc: PropTypes.string.isRequired,
-	imageAlt: PropTypes.string.isRequired,
+	emojiSrc: PropTypes.string.isRequired,
+	emojiAlt: PropTypes.string.isRequired,
 	color: PropTypes.string.isRequired,
 	count: PropTypes.number.isRequired,
 	biggestCount: PropTypes.number.isRequired,
@@ -385,22 +385,20 @@ RatingCardBar.propTypes = {
 // [0] - 1 rating count
 
 function RatingCard({ ratingCounts }) {
-	const [ratingCard, setRatingCard] = useState(null)
+	if (ratingCounts == null) {
+		return null
+	}
 
-	useEffect(() => {
-		if (ratingCounts == null) {
-			return
-		}
+	let biggestCount = 0
 
-		let biggestCount = 0
+	for (let i = 0; i < ratingCounts.length; i++) {
+		biggestCount = Math.max(biggestCount, ratingCounts[i])
+	}
+	
+	let [averageRating, averageRatingEmoji] = createAverageRating(ratingCounts)
 
-		for (let i = 0; i < ratingCounts.length; i++) {
-			biggestCount = Math.max(biggestCount, ratingCounts[i])
-		}
-
-		let [averageRating, averageRatingEmoji] = createAverageRating(ratingCounts)
-
-		setRatingCard(<Div>
+	return (
+		<Div>
 			<Group
 				separator='hide'
 				header={<Header
@@ -417,11 +415,11 @@ function RatingCard({ ratingCounts }) {
 				<Card size='l'>
 					<Card size='l' mode='shadow'>
 						<Div>
-							<RatingCardBar imageSrc={LoveEmoji} imageAlt='5' biggestCount={biggestCount} color='#FFC107' count={ratingCounts[4]} />
-							<RatingCardBar imageSrc={LikeEmoji} imageAlt='4' biggestCount={biggestCount} color='#4CD964' count={ratingCounts[3]} />
-							<RatingCardBar imageSrc={NeutralEmoji} imageAlt='3' biggestCount={biggestCount} color='#63B9BA' count={ratingCounts[2]} />
-							<RatingCardBar imageSrc={DislikeEmoji} imageAlt='2' biggestCount={biggestCount} color='#F4E7C3' count={ratingCounts[1]} />
-							<RatingCardBar imageSrc={HateEmoji} imageAlt='1' biggestCount={biggestCount} color='#E64646' count={ratingCounts[0]} />
+							<RatingCardBar emojiSrc={LoveEmoji} emojiAlt='5' biggestCount={biggestCount} color='#FFC107' count={ratingCounts[4]} />
+							<RatingCardBar emojiSrc={LikeEmoji} emojiAlt='4' biggestCount={biggestCount} color='#4CD964' count={ratingCounts[3]} />
+							<RatingCardBar emojiSrc={NeutralEmoji} emojiAlt='3' biggestCount={biggestCount} color='#63B9BA' count={ratingCounts[2]} />
+							<RatingCardBar emojiSrc={DislikeEmoji} emojiAlt='2' biggestCount={biggestCount} color='#F4E7C3' count={ratingCounts[1]} />
+							<RatingCardBar emojiSrc={HateEmoji} emojiAlt='1' biggestCount={biggestCount} color='#E64646' count={ratingCounts[0]} />
 						</Div>
 					</Card>
 					{averageRatingEmoji ? <img style={{
@@ -431,10 +429,12 @@ function RatingCard({ ratingCounts }) {
 					}} src={averageRatingEmoji} alt={averageRating} /> : null}
 				</Card>
 			</Group>
-		</Div>)
-	}, [ratingCounts])
+		</Div>
+	)
+}
 
-	return ratingCard
+RatingCard.propTypes = {
+	ratingCounts: PropTypes.arrayOf(PropTypes.number),
 }
 
 // TODO: сделать возможность поделиться числами рейтинга и вместе с этим возможность запостить (не только история)

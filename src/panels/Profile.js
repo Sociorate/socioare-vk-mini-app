@@ -394,7 +394,7 @@ function RatingCard({ ratingCounts }) {
 	for (let i = 0; i < ratingCounts.length; i++) {
 		biggestCount = Math.max(biggestCount, ratingCounts[i])
 	}
-	
+
 	let [averageRating, averageRatingEmoji] = createAverageRating(ratingCounts)
 
 	return (
@@ -538,6 +538,9 @@ ShareStoryButton.propTypes = {
 function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 	const [isFetching, setIsFetching] = useState(false)
 	const [ratingCounts, setRatingCounts] = useState([0, 0, 0, 0, 0])
+
+	const [notificationBeTheFirst, setNotificationBeTheFirst] = useState(null)
+	const [promoBanner, setPromoBanner] = useState(null)
 	const [ratingCard, setRatingCard] = useState(null)
 
 	const fetchRating = useCallback(async () => {
@@ -552,6 +555,14 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 				throw new Error('`ratingCountsData` is empty')
 			}
 
+			let ratesCount = 0
+			for (let i = 0; i < ratingCountsData.length; i++) {
+				ratesCount += ratingCountsData[i]
+			}
+			if (ratesCount == 0) {
+				setNotificationBeTheFirst(<Footer>Ещё никто не оценивал этого человека. Станьте первым!</Footer>)
+			}
+
 			setRatingCounts(ratingCounts)
 			setRatingCard(<RatingCard ratingCounts={ratingCountsData} />)
 		} catch (err) {
@@ -560,8 +571,6 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 			showErrorSnackbar(setSnackbar, "Не удалось получить данные о рейтинге")
 		}
 	}, [user])
-
-	const [promoBanner, setPromoBanner] = useState(null)
 
 	const fetchAds = useCallback(async () => {
 		try {
@@ -593,7 +602,10 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 		>
 			<UserProfileRichCell setPopout={setPopout} setSnackbar={setSnackbar} user={user} />
 
-			{currentUser.id !== user.id && user.deactivated != 'deleted' ? <RatingButtons userid={user.id} setSnackbar={setSnackbar} fetchRating={fetchRating} /> : null}
+			{currentUser.id == user.id || user.deactivated == 'deleted' ? null : <>
+				{notificationBeTheFirst}
+				<RatingButtons userid={user.id} setSnackbar={setSnackbar} fetchRating={fetchRating} />
+			</>}
 
 			{promoBanner}
 

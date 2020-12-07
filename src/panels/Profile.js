@@ -560,7 +560,7 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 				ratesCount += ratingCountsData[i]
 			}
 			if (ratesCount == 0) {
-				setNotificationBeTheFirst(<Footer>Ещё никто не оценивал этого человека. Станьте первым!</Footer>)
+				setNotificationBeTheFirst(<Footer><Subhead>Ещё никто не оценивал этого человека. Станьте первым!</Subhead></Footer>)
 			}
 
 			setRatingCounts(ratingCounts)

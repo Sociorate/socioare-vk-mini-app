@@ -32,7 +32,7 @@ import {
 } from '@vkontakte/vkui'
 
 import {
-	Icon28UserOutline,
+	Icon28UsersOutline,
 	Icon28QrCodeOutline,
 	Icon28FavoriteOutline,
 	Icon28HomeOutline,
@@ -292,7 +292,7 @@ function ProfileSelection({ go, setSnackbar, setPopout, currentUser }) {
 
 				<SimpleCell
 					style={{ borderRadius: 'inherit' }}
-					before={<Icon28UserOutline />}
+					before={<Icon28UsersOutline />}
 					onClick={async () => {
 						let friend = null
 						let isErrNotSupportedPlatform = false

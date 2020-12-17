@@ -60,7 +60,6 @@ import DislikeEmoji from '../openmoji-edited/1F627.svg'
 import HateEmoji from '../openmoji-edited/1F621.svg'
 
 // TODO: рекламный блок для версии vk.com и m.vk.com
-// TODO: кнопка поделиться в истории внизу профиля в моде простого текста
 
 function Profile({ id, goBack, setPopout, currentUser, user }) {
 	if (currentUser == null) {

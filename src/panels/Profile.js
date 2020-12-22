@@ -560,6 +560,8 @@ function UserProfile({ setPopout, setSnackbar, currentUser, user }) {
 			}
 			if (ratesCount == 0) {
 				setNotificationBeTheFirst(<Footer><Subhead>Оцените этого человека первым!</Subhead></Footer>)
+			} else {
+				setNotificationBeTheFirst(null)
 			}
 
 			setRatingCounts(ratingCounts)
